@@ -1,0 +1,24 @@
+{%extends 'base.html'%}
+{% load static%}
+
+
+{%block title%} course details {%endblock%}
+{%block main%}
+        <h1> course name : {{course.COURSE_NAME}}</h1>
+    </div> 
+    <div>
+        <h1>Lectures</h1>
+        {% for lecture in lectures %}
+            
+            <h2>{{lecture.NAME}}</h2>
+        {% endfor %}
+    </div>
+
+    <footer>
+        <h2> as a instructor you have a limited access to the content if you want to enroll please 
+            <a href="{%url 'HOME_AREA:student_reg_form'%}"> register as learner</a>
+
+        </h2>
+    </footer>
+
+{%endblock%}

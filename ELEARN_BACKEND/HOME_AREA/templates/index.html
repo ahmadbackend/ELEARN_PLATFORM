@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Home page {% endblock %}
+
+{% block main %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 py-8">
+    {% for course, rate in courses.items %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <a href="{% url 'HOME_AREA:Course_Details' course.COURSE_NAME %}" class="block">
+            <img src="{{ course.COVER_PHOTO.url }}" alt="cover photo" class="w-full h-48 object-cover"/>
+            <div class="p-6">
+                <h2 class="text-xl font-semibold text-gray-800">{{ course.COURSE_NAME }}</h2>
+                <p class="text-gray-600 mt-2">Instructor: {{ course.instructor.USER_NAME }}</p>
+                <p class="text-gray-500 text-sm mt-1">Published on {{ course.PUBLICATION_DATE }}</p>
+                {% if rate.0 != 0 %}
+                <p class="mt-2 text-yellow-500 font-medium">Average rating: {{ rate.0 }} by {{ rate.1 }} learners</p>
+                {% else %}
+                <p class="mt-2 text-gray-500 font-medium">No ratings for this course yet</p>
+                {% endif %}
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

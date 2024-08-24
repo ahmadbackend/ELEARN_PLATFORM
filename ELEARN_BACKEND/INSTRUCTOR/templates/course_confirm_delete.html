@@ -1,0 +1,13 @@
+<form method="post">{% csrf_token %}
+     
+ 
+ 
+ 
+    <p>Are you sure you want to delete that course this process is <strong> irreversable </strong></p>
+     
+     
+     
+     
+        <input type="submit" value="Confirm">
+    </form>
+    <a href="{% url 'instructor:Dashboard'%}"> do not delete return me </a>

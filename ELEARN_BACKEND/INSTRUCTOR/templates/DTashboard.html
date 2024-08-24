@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Dashboard {% endblock %}
+
+{% block main %}
+<div class="container mx-auto px-4 py-8">
+    <!-- New Course Section -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-800">
+            Ready to create a new course? <a href="{% url 'instructor:CreateCourse' %}" class="text-blue-600 hover:underline">Click here</a>
+        </h1>
+    </div>
+    <div>
+        <div>
+            <h1> status area</h1>
+            <form method="post" action="{% url 'instructor:update_status' %}">
+                {% csrf_token %}
+                <textarea name="status" placeholder="Enter your status"></textarea>
+                <button type="submit">Update Status</button>
+            </form>
+            
+            {% if status %}
+                <p>Your current status: {{ status }}</p>
+            {% else %}
+                <p>You have not set a status yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Published Courses Section -->
+    <div class="mb-8">
+        <h1 class="text-xl font-semibold text-gray-800 mb-4">Published Courses</h1>
+        <table class="min-w-full bg-white border border-gray-300 rounded-md shadow-md">
+            <thead>
+                <tr class="bg-gray-100 text-gray-800">
+                    <th class="py-2 px-4 border-b">Course Name</th>
+                    <th class="py-2 px-4 border-b">Enrolled Students</th>
+                    <th class="py-2 px-4 border-b">Edit Course</th>
+                    <th class="py-2 px-4 border-b">Delete Course</th>
+                    <th class="py-2 px-4 border-b">Email Students</th>
+                    <th class="py-2 px-4 border-b">Browse Profiles</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course, student in courses.items %}
+                {% if not course.IsDraft %}
+                <tr class="text-gray-700">
+                    <td class="py-2 px-4 border-b">{{ course.COURSE_NAME }}</td>
+                    <td class="py-2 px-4 border-b">{{ student }}</td>
+                    <td class="py-2 px-4 border-b"><a href="{% url 'instructor:course_detail' course.COURSE_NAME %}" class="text-blue-600 hover:underline">View Insights</a></td>
+                    <td class="py-2 px-4 border-b"><a href="{% url 'instructor:course_delete' course.COURSE_NAME %}" class="text-red-600 hover:underline">Delete</a></td>
+                    <td class="py-2 px-4 border-b"> <a href="#" class="text-green-600 hover:underline">Send email / notificationto followers</a>
+                    
+                    </td>
+                    <td class="py-2 px-4 border-b"><a href="#" class="text-blue-600 hover:underline">Browse Profiles</a></td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Draft Courses Section -->
+    <div class="mb-8">
+        <h1 class="text-xl font-semibold text-gray-800 mb-4">Draft Courses</h1>
+        <table class="min-w-full bg-white border border-gray-300 rounded-md shadow-md">
+            <thead>
+                <tr class="bg-gray-100 text-gray-800">
+                    <th class="py-2 px-4 border-b">Course Name</th>
+                    <th class="py-2 px-4 border-b">Add Lectures</th>
+                    <th class="py-2 px-4 border-b">Delete Course</th>
+                    <th class="py-2 px-4 border-b">Delete/Edit Lectures</th>
+                    <th class="py-2 px-4 border-b">Publish Course</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                {% if course.IsDraft %}
+                <tr class="text-gray-700">
+                    <td class="py-2 px-4 border-b">{{ course.COURSE_NAME }}</td>
+                    <td class="py-2 px-4 border-b"><a href="{% url 'instructor:AddLecture' course.COURSE_NAME %}" class="text-blue-600 hover:underline">Add Lectures</a></td>
+                    <td class="py-2 px-4 border-b"><a href="{% url 'instructor:course_delete' course.COURSE_NAME %}" class="text-red-600 hover:underline">Delete</a></td>
+                    <td class="py-2 px-4 border-b"><a href="{% url 'instructor:HandlLectures' course.COURSE_NAME %}" class="text-yellow-600 hover:underline">Manage Lectures</a></td>
+                    <td class="py-2 px-4 border-b"><a href="{% url 'instructor:Publish' course.COURSE_NAME %}" class="text-green-600 hover:underline">Publish</a></td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Students and Blocking Section -->
+    <div class="mb-8">
+        <h1 class="text-xl font-semibold text-gray-800 mb-4">Explore Your Students</h1>
+        <p class="text-gray-600 mb-2">Find out what else your students are learning.</p>
+        <a href="{%url 'instructor:Learners'%}" class="text-blue-600 hover:underline">Your Learners</a>
+    </div>
+
+    <!-- Block Abusers Section -->
+    <div class="mb-8">
+        <h1 class="text-xl font-semibold text-gray-800 mb-4">Block Abusers</h1>
+        <p class="text-gray-600 mb-2">If you find harassment from any student, you can block them from all your courses by reporting their username using the form below.</p>
+        <form action="{% url 'instructor:Block' %}" method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label for="blocked" class="block text-gray-600">Username to block</label>
+                <input type="text" name="blocked" id="blocked" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+            <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Submit</button>
+        </form>
+    </div>
+
+    <!-- Unblock Learners Section -->
+    <div class="mb-8">
+        <h1 class="text-xl font-semibold text-gray-800 mb-4">Unblock Learners</h1>
+        <p class="text-gray-600 mb-2">Unblock learners so they can enroll again in your courses.</p>
+        <form action="{% url 'instructor:UnBlock' %}" method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label for="unblocked" class="block text-gray-600">Username to unblock</label>
+                <input type="text" name="unblocked" id="unblocked" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Submit</button>
+        </form>
+    </div>
+
+    <!-- Footer Message Section -->
+    <footer class="text-center mt-8">
+        <p class="text-gray-600">{{ message }}</p>
+    </footer>
+</div>
+{% endblock %}

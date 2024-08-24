@@ -1,0 +1,27 @@
+{%extends 'base.html'%}
+{% load static%}
+
+
+{%block title%} process lectures {%endblock%}
+{%block main%}
+    <table>
+        <thead>
+        <row>
+            <th> lecture name</th>
+            <th>EDIT</th>
+            <th>DELETE</th>
+        </row>
+        </thead>
+        <tbody>
+            {%for lecture in lectures%}
+            <row>
+                <td>{{lecture}}</td>
+                <td><a href="#">edit</a></td>
+                <td><a href="#">delete</a></td>
+            </row>
+            {%endfor%}
+        </tbody>
+
+    </table>
+    
+{%endblock%}

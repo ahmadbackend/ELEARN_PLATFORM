@@ -1,0 +1,11 @@
+FIRST_NAME,LAST_NAME,USER_NAME,EMAIL,PHONE,PICTURE,PASSWORD,Isactive
+Alice,Green,alicegreen1,alicegreen1@example.com,2345678901,,password123,true
+Robert,Harris,robertharris2,robertharris2@example.com,9876543211,,password456,true
+Charlie,Clark,charlieclark3,charlieclark3@example.com,4567890123,,password789,true
+Sophia,Lopez,sophialopez4,sophialopez4@example.com,7890123456,,password012,true
+David,Wright,davidwright5,davidwright5@example.com,1234567899,,password345,true
+Lily,Hall,lilyhall6,lilyhall6@example.com,0987654323,,password678,true
+James,King,jamesking7,jamesking7@example.com,5678901234,,password901,true
+Grace,Young,graceyoung8,graceyoung8@example.com,6789012345,,password234,true
+Henry,Scott,henryscott9,henryscott9@example.com,7890123457,,password567,true
+Ava,Adams,avaadams10,avaadams10@example.com,8901234567,,password890,true

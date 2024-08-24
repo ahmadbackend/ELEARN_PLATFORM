@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Course Details {% endblock %}
+
+{% block main %}
+<div class="container mx-auto py-8">
+    {% if blocked %}
+    <div class="bg-red-100 text-red-700 p-6 rounded-lg shadow-md">
+        <p>
+            You have been blocked from accessing this course by the instructor. 
+            You can send a message to resolve the issue.
+        </p>
+        <form action="{% url 'STUDENTS:RemoveBlockRequest' course.COURSE_NAME %}" method="post" class="mt-4">
+            {% csrf_token %}
+            <label for="appeal" class="block text-sm font-medium text-gray-700">Write your appeal</label>
+            <textarea name="appeal" placeholder="Talk to your instructor" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></textarea>
+            <button type="submit" value="submit" class="mt-3 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">Submit</button>
+        </form>
+        {% if message %}
+        <div class="mt-4 text-green-600">{{ message }}</div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">{{ course.COURSE_NAME }}</h1>
+        <video id="LECTURE" controls class="w-full h-auto rounded-lg shadow-md"></video>
+        <div class="mt-8">
+            {% for lecture in lectures %}
+            <div class="mb-4">
+                {% if enrolled %}
+                    {% if lecture.VIDEO %}
+                    <a href="#" onclick="display('{{ lecture.VIDEO.url }}'); return false;" class="text-blue-600 hover:text-blue-800">{{ lecture.NAME }}</a><br>
+                        {% if lecture.ADDITIONAL_FILES %}
+                        <a href="{{ lecture.ADDITIONAL_FILES.url }}" download class="text-sm text-gray-600 hover:text-gray-800">{{ lecture.ADDITIONAL_FILES.name }}</a>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                <h2 class="text-lg font-semibold text-gray-800">{{ lecture.NAME }}</h2>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-8">
+            {% if reviews %}
+            <h3 class="text-xl font-bold text-gray-900">Reviews</h3>
+            <div class="mt-4 space-y-4">
+                {% for review in reviews %}
+                <div class="p-4 bg-gray-100 rounded-lg shadow-md">
+                    <p><a href="#" class="text-blue-600 hover:text-blue-800">{{ review.USER_NAME }}:</a> {{ review.OPINION }}</p>
+                    <p class="text-sm text-gray-500">{{ review.WRITING_DATE }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-600">No reviews for this course yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="mt-8">
+            {% if enrolled %}
+            <div class="p-6 bg-green-100 text-green-800 rounded-lg shadow-md">
+                <p>You are enrolled in this course. Enjoy learning!</p>
+                <form action="{% url 'STUDENTS:AddReview' course.COURSE_NAME %}" method="post" class="mt-4">
+                    {% csrf_token %}
+                    <label for="rev" class="block text-sm font-medium text-gray-700">Share your opinion about the course:</label>
+                    <input type="text" name="rev" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" />
+                    <button type="submit" value="submit" class="mt-3 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">Submit</button>
+                </form>
+            </div>
+
+            <div class="mt-8 p-6 bg-yellow-100 text-yellow-800 rounded-lg shadow-md">
+                <p>How would you rate the course?</p>
+                <form action="{% url 'STUDENTS:AddRating' course.COURSE_NAME %}" method="post" class="mt-4">
+                    {% csrf_token %}
+                    <label for="rate" class="block text-sm font-medium text-gray-700">Rate the course</label>
+                    <select name="rate" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        <option value=1>1 star</option>
+                        <option value=2>2 stars</option>
+                        <option value=3>3 stars</option>
+                        <option value=4>4 stars</option>
+                        <option value=5>5 stars</option>
+                    </select>
+                    <button type="submit" value="submit" class="mt-3 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">Submit</button>
+                </form>
+
+            </div>
+            {% else %}
+            <div class="mt-8 p-6 bg-gray-100 text-gray-800 rounded-lg shadow-md">
+                <p><a href="{% url 'STUDENTS:Enroll' course.COURSE_NAME %}" class="text-blue-600 hover:text-blue-800">Enroll now so you can watch the lectures</a></p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+<footer>
+    <input type="text" id="text" />
+    <a href="#" onclick="SendT(); return false;" >send</a>
+</footer>
+{% endblock %}
+
+<script>
+ document.addEventListener('DOMContentLoaded', function() {
+    let text = document.getElementById('text');
+    let videoElement = document.getElementById("LECTURE");
+    const roomUrl = `ws://127.0.0.1:8000/websocket`;
+    const chatWebSocket = new WebSocket(roomUrl);
+
+    function display(url) {
+        videoElement.src = url;
+        videoElement.play();
+    }
+
+    function SendT() {
+        chatWebSocket.send('{"type":"message", "message":"im here "}');
+    }
+
+    window.SendT = SendT;
+})
+</script>
