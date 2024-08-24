@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Dashboard {% endblock %}
+{% block main %}
+    <div class="space-y-8">
+        <!-- Profile Information -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            {% if CAN_EDIT %}
+            <h1 class="text-xl font-semibold text-gray-800 mb-4"><a href="{% url 'STUDENTS:EditProfile' %}" class="text-blue-500 hover:text-blue-700">Edit Your Information</a></h1>
+            {% endif %}
+            <h1 class="text-2xl font-semibold text-gray-800 mb-4">Public Information</h1>
+            <p class="text-gray-700 mb-2">Username: {{ student.USER_NAME }}</p>
+            <p class="text-gray-700 mb-2">First Name: {{ student.FIRST_NAME }}</p>
+            <p class="text-gray-700 mb-2">Last Name: {{ student.LAST_NAME }}</p>
+            <img src="{{ student.PICTURE.url }}" alt="profile picture" class="w-32 h-32 rounded-full mt-4" />
+        </div>
+        <!-- Status Area -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h1 class="text-xl font-semibold text-gray-800 mb-4">Status Area</h1>
+            {% if CAN_EDIT %}
+            <form method="post" action="{% url 'STUDENTS:update_status' %}" class="space-y-4">
+                {% csrf_token %}
+                <textarea name="status" placeholder="Enter your status" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Update Status</button>
+            </form>
+            {% endif %}
+            
+            {% if status %}
+                <p class="mt-4 text-gray-700">Your current status: {{ status }}</p>
+            {% else %}
+                <p class="mt-4 text-gray-500">You have not set a status yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Enrolled Courses -->
+        <div>
+            <h1 class="text-2xl font-semibold text-gray-800 mb-6">Enrolled Courses</h1>
+            <div class="space-y-6">
+                {% for course in courses %}
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold text-gray-800">{{ course.COURSE_NAME }}</h2>
+                    <img src="{{ course.COVER_PHOTO.url }}" alt="cover photo" class="w-full h-48 object-cover rounded-md mt-4 mb-6" />
+                    <a href="{% url 'HOME_AREA:Course_Details' course.COURSE_NAME %}" class="text-blue-500 hover:text-blue-700">Resume your learning</a>
+                    {% if CAN_EDIT %}
+                    <a href="{% url 'STUDENTS:DropCourse' course.COURSE_NAME %}" class="ml-4 text-red-500 hover:text-red-700">Drop the course</a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+
+
+        {% if message %}
+        <footer class="bg-gray-100 p-4 rounded-md mt-8">
+            <p class="text-center text-gray-600">{{ message }}</p>
+        </footer>
+        {% endif %}
+    </div>
+{% endblock %}

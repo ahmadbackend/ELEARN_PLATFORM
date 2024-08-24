@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Learners List {% endblock %}
+{% block main %}
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6">Here you can see the students who are enrolled in each of your courses and explore their home pages</h1>
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white shadow-md rounded-lg">
+            <thead class="bg-gray-200 text-gray-700">
+                <tr>
+                    <th class="px-6 py-3 text-left text-sm font-medium">Course</th>
+                    <th class="px-6 py-3 text-left text-sm font-medium">Learners Enrolled</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-600">
+                {% for course, students in learners.items %}
+                <tr class="border-b">
+                    <td class="px-6 py-4 whitespace-nowrap">{{ course }}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-wrap gap-2">
+                            {% for student in students %}
+                            <a href="{% url 'STUDENTS:DashboardWithUserName' student.USER_NAME %}" class="text-blue-600 hover:text-blue-800">{{ student.USER_NAME }}</a>
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

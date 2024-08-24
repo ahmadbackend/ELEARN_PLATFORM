@@ -1,0 +1,11 @@
+NAME,VIDEO,ADDITIONAL_FILES,course
+Lecture 1,lecture1.mp4,files1.zip,Introduction to Python
+Lecture 2,lecture2.mp4,files2.zip,Advanced Django
+Lecture 3,lecture3.mp4,files3.zip,React Native Essentials
+Lecture 4,lecture4.mp4,files4.zip,Machine Learning Basics
+Lecture 5,lecture5.mp4,files5.zip,Data Science with Python
+Lecture 6,lecture6.mp4,files6.zip,JavaScript for Beginners
+Lecture 7,lecture7.mp4,files7.zip,Web Development 101
+Lecture 8,lecture8.mp4,files8.zip,Introduction to AI
+Lecture 9,lecture9.mp4,files9.zip,Data Structures and Algorithms
+Lecture 10,lecture10.mp4,files10.zip,Cloud Computing

@@ -1,0 +1,17 @@
+{%extends 'base.html'%}
+{% load static%}
+
+
+{%block title%} edit profile  {%endblock%}
+{%block main%}
+    <h1> edit your informations</h1>
+    <form action="{%url 'STUDENTS:EditProfile'%}" method="post" enctype="multipart/form-data">
+        {%csrf_token%}
+        {% if form%}
+        {{form}}
+        {%else%}
+        <p> no form recieved</p>
+        {%endif%}
+        <input type="submit" value="submit" />
+    </form>
+{%endblock%}

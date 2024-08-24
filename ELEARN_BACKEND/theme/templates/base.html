@@ -1,0 +1,57 @@
+{% load static tailwind_tags %}
+{% load static %}
+{% load custom_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block title %} Home page {% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    {% tailwind_css %}
+
+    {% block css %}
+    <link rel="stylesheet" href="{% static 'css/dist/home.css' %}" />
+    {% endblock %}
+</head>
+<body class="bg-gray-50 font-serif leading-relaxed text-gray-800">
+
+<header class="bg-white shadow-md py-4">
+    <div class="container mx-auto flex justify-between items-center">
+        <div class="title-area">
+            <h1 class="text-3xl font-bold text-gray-900">Welcome to FreeCoursera</h1>
+            <p class="text-lg text-gray-600">It is free and always will be free</p>
+        </div>
+        <nav class="flex space-x-4">
+            <a href="{% url 'HOME_AREA:index' %}" class="text-blue-600 hover:text-blue-800">HomePage</a>
+            {% if user.user_cat and user.Isactive%}
+            {{user.Isactive}}
+            <p class="text-gray-700">Welcome, {{ user }}</p>
+            <a href="{% url 'HOME_AREA:Logout' %}" class="text-blue-600 hover:text-blue-800">Log out</a>
+            {% with user.user_cat|get_dashboard_url as dash_url %}
+            
+            <a href="{% url dash_url %}" class="text-blue-600 hover:text-blue-800">Dashboard</a>
+            {% endwith %}
+            {% else %}
+            <div class="flex space-x-4">
+                <div class="student-area">
+                    <a href="{% url 'HOME_AREA:student_reg_form' %}" class="text-blue-600 hover:text-blue-800">Learner Registration</a>
+                    <a href="{% url 'HOME_AREA:student_login' %}" class="text-blue-600 hover:text-blue-800">Learner Log in</a>
+                </div>
+                <div class="instructor-area">
+                    <a href="{% url 'HOME_AREA:instructor_reg_form' %}" class="text-blue-600 hover:text-blue-800">Instructor Registration</a>
+                    <a href="{% url 'HOME_AREA:instructor_login' %}" class="text-blue-600 hover:text-blue-800">Instructor Log in</a>
+                </div>
+            </div>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
+<div class="container mx-auto py-8">
+    {% block main %}{% endblock %}
+</div>
+
+</body>
+</html>
