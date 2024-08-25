@@ -52,3 +52,14 @@ def Course_Details(request,courseName):
     return render(request,"CourseDetails.html",{'course':course,
                 'lectures':lectures, 'reviews':reviews, 
                 'enrolled':IsEnrolled, 'blocked':Blocked})
+
+def AccessChatRoom(request, courseName):
+    user_name = request.user.USER_NAME
+    cour = courseName.split(" ")
+    cc=""
+    for co in cour:
+        cd = co.strip()
+        cc+=cd
+    print(cc)
+
+    return render(request, 'CourseChatRoom.html',{'course':cc,'user':user_name})

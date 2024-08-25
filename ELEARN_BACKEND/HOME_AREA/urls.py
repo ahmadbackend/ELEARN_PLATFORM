@@ -11,6 +11,7 @@ urlpatterns = [
     path("forget/<str:user_type>",REGLOG.Forget , name="Forget" ),
     path("logout",REGLOG.Logout, name='Logout'),
     path("editpass/<str:user_type>",REGLOG.EditPass, name='EditPass'),
+    path('AccessChatRoom/<str:courseName>', views.AccessChatRoom , name = 'AccessChatRoom'),
 
     #courses functionalities
     path("Course_Details/<str:courseName>",views.Course_Details, name= 'Course_Details'),

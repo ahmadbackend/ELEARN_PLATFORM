@@ -91,6 +91,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ELEARN_BACKEND.wsgi.application'
 ASGI_APPLICATION = 'ELEARN_BACKEND.asgi.application'
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_rabbitmq.core.RabbitmqChannelLayer",
+        "CONFIG": {
+            "host": "amqp://guest:guest@127.0.0.1/asgi",
+            # "ssl_context": ... (optional)
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
