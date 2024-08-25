@@ -86,6 +86,7 @@
                 </form>
 
             </div>
+
             {% else %}
             <div class="mt-8 p-6 bg-gray-100 text-gray-800 rounded-lg shadow-md">
                 <p><a href="{% url 'STUDENTS:Enroll' course.COURSE_NAME %}" class="text-blue-600 hover:text-blue-800">Enroll now so you can watch the lectures</a></p>
@@ -95,28 +96,19 @@
     </div>
     {% endif %}
 </div>
-<footer>
-    <input type="text" id="text" />
-    <a href="#" onclick="SendT(); return false;" >send</a>
-</footer>
-{% endblock %}
+<div>
+    <a href="{%url 'HOME_AREA:AccessChatRoom' course.COURSE_NAME%}" >chat with other enrolled students</a>
+</div>
+
 
 <script>
- document.addEventListener('DOMContentLoaded', function() {
-    let text = document.getElementById('text');
+
     let videoElement = document.getElementById("LECTURE");
-    const roomUrl = `ws://127.0.0.1:8000/websocket`;
-    const chatWebSocket = new WebSocket(roomUrl);
+ 
 
     function display(url) {
         videoElement.src = url;
         videoElement.play();
     }
-
-    function SendT() {
-        chatWebSocket.send('{"type":"message", "message":"im here "}');
-    }
-
-    window.SendT = SendT;
-})
 </script>
+{% endblock %}

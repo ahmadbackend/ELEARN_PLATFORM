@@ -22,7 +22,7 @@ the project plan :-
             a-lectures done 
             b-reviews done 
             c-average ratings done (how many gave each rating) no 
-            d-chat area(among students enrolled with no file and photos sharing)
+            d-chat area(among students enrolled with no file and photos sharing) done 
             e-chat area (lecturer  with students file sharing allowed)
             f- chat area(one to one with requests to join file sharing allowed)
     - create APIs and document it for all the above 

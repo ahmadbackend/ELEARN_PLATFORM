@@ -1,0 +1,57 @@
+<!-- chat/templates/chat/room.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} {{course}} chat room {% endblock %}
+
+{% block main %}
+    <div id="chat-log" ></div><br>
+    <input id="chat-message-input" type="text" size="100"><br>
+    <input id="chat-message-submit" type="button" value="Send">
+    {{ course|json_script:"course-name" }}
+    {{user|json_script:"user-name"}}
+   
+    <script>
+        const roomName = JSON.parse(document.getElementById('course-name').textContent);
+        const userName = JSON.parse(document.getElementById('user-name').textContent);
+        
+        
+
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat/'
+            + roomName
+            + '/'
+        );
+        //
+        chatSocket.onmessage = function(e) {
+            let chatLog = document.getElementById('chat-log')
+            const data = JSON.parse(e.data);
+            const message = `${data.message}<br><a href="{% url 'STUDENTS:DashboardWithUserName' user %}">${userName}</a><br>`;
+            chatLog.innerHTML += message;
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.key === 'Enter') {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            console.log(`the message is ${message} `)
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = '';
+        };
+    </script>
+
+{%endblock%}

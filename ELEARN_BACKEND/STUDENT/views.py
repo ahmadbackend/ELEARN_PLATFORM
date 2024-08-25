@@ -36,9 +36,9 @@ def Enroll(request,courseName):
 def Dashboard(request, studentName = ''):
     print(request.user)
     # this approach to serve both personal and others dashboards 
-    print( len(studentName))
-    student_name = request.user if len(studentName) <2  else studentName
-    Can_EDIT = True if  request.user == student_name else False
+  
+    student_name = request.user.USER_NAME if len(studentName) <2  else studentName
+    Can_EDIT = True if  request.user.USER_NAME == student_name else False
     print(student_name)
     student = STUDENT.objects.get(USER_NAME = student_name) 
     courses = COURSE_LIST.objects.filter(student = student).values_list('course', flat = True)
