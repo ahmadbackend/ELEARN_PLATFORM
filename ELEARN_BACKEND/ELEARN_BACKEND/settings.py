@@ -52,10 +52,18 @@ INSTALLED_APPS = [
     'INSTRUCTOR',
     'tailwind',
     'theme',
+    'rest_framework',
     'django_browser_reload'
 
     
 ]
+# rest frame setting 
+REST_FRAMEWORK = {
+
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny'
+    ]
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

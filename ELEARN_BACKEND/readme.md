@@ -24,6 +24,10 @@ the project plan :-
             c-average ratings done (how many gave each rating) no 
             d-chat area(among students enrolled with no file and photos sharing) done 
             e-chat area (lecturer  with students file sharing allowed)
-            f- chat area(one to one with requests to join file sharing allowed)
-    - create APIs and document it for all the above 
+            f- chat area(one to one with requests to join file sharing allowed) 
     - tailwind styling just configured it  done 
+    - create APIs and document it for :-
+                a-create student , retrieve student , delete, update done 
+                b- list courses , details course done partially
+                c- create instructor , delete, update , get  
+
