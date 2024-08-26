@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views , APIs
 # declaring namespace so i can use these views from anywhere 
 app_name = 'STUDENTS'
 urlpatterns = [
@@ -15,5 +15,8 @@ urlpatterns = [
     path('AddRating/<str:courseName>', views.AddRating, name = 'AddRating'),
 
     path('enrol/<str:courseName>/', views.Enroll, name='Enroll'),  # Make sure there is a trailing slash
+
+    #student APIs
+    path('APIs/<int:pk>', APIs.StudentApi.as_view()),
 
 ]

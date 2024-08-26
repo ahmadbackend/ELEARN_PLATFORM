@@ -28,7 +28,7 @@
         chatSocket.onmessage = function(e) {
             let chatLog = document.getElementById('chat-log')
             const data = JSON.parse(e.data);
-            const message = `${data.message}<br><a href="{% url 'STUDENTS:DashboardWithUserName' user %}">${userName}</a><br>`;
+            const message = `<a href="{% url 'STUDENTS:DashboardWithUserName' user %}">${userName}</a>: ${data.message} `;
             chatLog.innerHTML += message;
         };
 

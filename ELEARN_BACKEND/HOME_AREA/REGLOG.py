@@ -88,16 +88,18 @@ def student_login(request):
 
             if student is not None:
                 if student.Isactive:
+                    print(student.Isactive)
 
-                    if login(request, student, backend = "HOME_AREA.AuthCust.StudentBackend"):
-                        print(f'User after login: {request.user} (authenticated: {request.user.is_authenticated})')
+                    try:
+                        login(request, student, backend = "HOME_AREA.AuthCust.StudentBackend")
                     
                     
                         return redirect('HOME_AREA:index')
-                    else:
+                    except:
                         return render(request, "student_login.html",{'form':form,"alarm":"login failed"})
 
                 else:
+                    print(f"you are not active {student.Isactive}")
                     return render(request, "student_login.html",{'form':form,"alarm":"please activate your account first your activation code can be in inbox or junk mail"})
             
             

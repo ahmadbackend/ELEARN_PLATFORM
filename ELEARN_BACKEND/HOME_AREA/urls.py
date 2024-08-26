@@ -1,5 +1,5 @@
 from django.urls import path 
-from . import views, forms, REGLOG
+from . import views, forms, REGLOG, APIs
 app_name ='HOME_AREA'
 urlpatterns = [
    #registeration, log in functionalities
@@ -12,8 +12,14 @@ urlpatterns = [
     path("logout",REGLOG.Logout, name='Logout'),
     path("editpass/<str:user_type>",REGLOG.EditPass, name='EditPass'),
     path('AccessChatRoom/<str:courseName>', views.AccessChatRoom , name = 'AccessChatRoom'),
+    #api views
+    path('APIs/<str:courseName>', APIs.CourseDetails_fullview),
+    path('APIs',APIs.Course_list),
 
     #courses functionalities
     path("Course_Details/<str:courseName>",views.Course_Details, name= 'Course_Details'),
     path('',views.index , name ="index"),
+
+
+
 ]

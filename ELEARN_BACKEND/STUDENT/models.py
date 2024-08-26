@@ -21,6 +21,8 @@ class STUDENT(models.Model):
         ]
     )
     Isactive = models.BooleanField(default = False)
+    #useless just to overcome basebackend class and apis requirements
+    is_active = models.BooleanField(default = True)
 
     #all courses that student registered for 
     courseList = models.ManyToManyField('HOME_AREA.COURSES', through='COURSE_LIST')
@@ -33,7 +35,7 @@ class STUDENT(models.Model):
         return "student"
 
 
-    class META:
+    class Meta:
          verbose_name_plural = "Students"
          permissions=[
             ("ENROLL","LEAVE_REVIEW")

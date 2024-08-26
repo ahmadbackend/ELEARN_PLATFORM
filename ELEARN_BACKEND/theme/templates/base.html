@@ -26,7 +26,7 @@
         <nav class="flex space-x-4">
             <a href="{% url 'HOME_AREA:index' %}" class="text-blue-600 hover:text-blue-800">HomePage</a>
             {% if user.user_cat and user.Isactive%}
-            {{user.Isactive}}
+           
             <p class="text-gray-700">Welcome, {{ user }}</p>
             <a href="{% url 'HOME_AREA:Logout' %}" class="text-blue-600 hover:text-blue-800">Log out</a>
             {% with user.user_cat|get_dashboard_url as dash_url %}
