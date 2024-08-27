@@ -62,13 +62,15 @@ class COURSE_student_APIs(mixins.CreateModelMixin, mixins.RetrieveModelMixin,
                     return COURSE_LIST.objects.filter(student=stu, course=cour)
                 def get(self, request, *args , **kwargs):
                     return self.retrieve(request, *args, **kwargs)
+                    #enrol in a course 
+                def post(self, request, *args , **kwargs):
+                    return self.create(request, *args, **kwargs)
                 #drop the course    
                 def delete(self, request, *args, **kwargs):
                     return self.destroy(request, *args, **kwargs)
 #register and login student
 
 class StudentReg(generics.CreateAPIView):
-    serializer_class = StudentSerializer
 
     def create(self, request, *args, **kwargs):
         serialize = self.get_serializer(data =request.data)
@@ -78,8 +80,10 @@ class StudentReg(generics.CreateAPIView):
 
 @api_view(['POST'])
 def StudentLogAPI(request):
+    class studenty:
+        serializer_class = LogInSerializer
     if request.method == 'POST':
-        serialized = LogInSerializer(data =request.data)
+        serialized = studenty.serializer_class(data =request.data)
         if serialized.is_valid():
             return Response({"message": "User logged in successfully"}, status=status.HTTP_200_OK)
         else:
@@ -88,8 +92,10 @@ def StudentLogAPI(request):
 
 @api_view(['POST'])
 def VerifyStudentAPI(request):
+    class OPENai:
+        serializer_class = VrifySerializer
     if request.method == 'POST':
-        serialized = VrifySerializer(data =request.data)
+        serialized = OPENai.serializer_class(data =request.data)
         if serialized.is_valid():
             try:
                 data = serialized.validated_data
@@ -101,8 +107,10 @@ def VerifyStudentAPI(request):
             return Response({'message':"INVALID INPUT"},status=status.HTTP_404_NOT_FOUND)
 
 def ForgetPassStudentAPI(request):
+    class Forget:
+        serializer_class = ForgetPassSerializer
     if request.method == 'POST':
-        serializer = ForgetPassSerializer(data = request.data)
+        serializer = Forget.serializer_class(data = request.data)
         if serializer.is_valid():
             try:
                 cd = serializer.validated_data

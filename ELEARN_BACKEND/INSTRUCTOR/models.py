@@ -20,6 +20,7 @@ class INSTRUCTOR(models.Model):
     )
     PICTURE = models.ImageField(upload_to="images/", null=False, blank=False) #optioanl pic
     block_list = models.ManyToManyField('STUDENT.STUDENT', through='BLOCK_LIST')
+    is_active = models.BooleanField(default = True)
     Isactive = models.BooleanField(default = False)
     def __str__(self):
         return self.USER_NAME

@@ -17,20 +17,23 @@ def Course_list(request):
 #@permission_classes([IsAuthenticated])
 @user_type_required('student')
 def CourseDetails_fullview(request, courseName):
-    
+    #adding this uselss code to comply with Oopen api
+    class CourseDetailsView:
+        serializer_class = CourseDetailsSerializer
     if request.method == 'GET':
         queryset = COURSES.objects.get(COURSE_NAME = courseName)
-        Serializer = CourseDetailsSerializer(queryset)
+        Serializer = CourseDetailsView.serializer_class(queryset)
         return Response(Serializer.data)
 
 
 # if i need general view for visitor 
 @api_view(['GET'])
 def CourseDetails_general(request, courseName):
-    
+    class CourseDetailsView:
+        serializer_class = CourseDetailsSerializer 
     if request.method == 'GET':
         queryset = COURSES.objects.get(COURSE_NAME = courseName)
-        SerializedCourse = CourseDetailsSerializer(queryset)
+        SerializedCourse = CourseDetailsView.serializer_class(queryset)
         return Response(SerializedCourse.data)
 
 
