@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import *
 from HOME_AREA.serializers import Courses_Serializer
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = STUDENT
@@ -16,3 +18,22 @@ class CourseStudentSerializer(serializers.ModelSerializer):
         depth = 1
 
      
+class LogInSerializer(serializers.Serializer):
+    USER_NAME = Serializer.CharField(required=True)
+    EMAIL =Serializer.EmailField(required=True)
+    PASSWORD = Serializer.CharField(required=True)
+   
+    def validate(self, data):
+        user_name = data.get('USER_NAME')
+
+        email = data.get('EMAIL')
+        password = data.get('PASSWORD')
+        try:
+            student = get_object_or_404(STUDENT, USER_NAME = user_name,
+            PASSWORD = password, EMAIL = email)
+            if student.ISactive:
+                return data
+            else:
+                raise ValidationError({"message": "User is valid but not active", "Isactive": False}) 
+        except:
+            raise ValidationError("Invalid credentials")
