@@ -3,6 +3,7 @@ from . import views , APIs
 # declaring namespace so i can use these views from anywhere 
 app_name = 'STUDENTS'
 urlpatterns = [
+    #dashboard area
     path('Dashboard/<str:studentName>', views.Dashboard, name = 'DashboardWithUserName'),
     path('Dashboard', views.Dashboard, name = 'Dashboard'),
 
@@ -16,7 +17,9 @@ urlpatterns = [
 
     path('enrol/<str:courseName>/', views.Enroll, name='Enroll'),  # Make sure there is a trailing slash
 
-    #student APIs
-    path('APIs/<int:pk>', APIs.StudentApi.as_view()),
+    #student APIs area################
+    path('APIs/<str:course__COURSE_NAME>',APIs.COURSE_student_APIs.as_view()),
+    path('APIs/<str:USER_NAME>', APIs.StudentApi.as_view()),
+
 
 ]

@@ -6,7 +6,7 @@ class InstructorSerializer(serializers.ModelSerializer):
     class Meta:
         model = INSTRUCTOR
         fields = ["USER_NAME"]
-class Courses(serializers.ModelSerializer):
+class Courses_Serializer(serializers.ModelSerializer):
     instructor = InstructorSerializer()
     class Meta:
         model = COURSES
