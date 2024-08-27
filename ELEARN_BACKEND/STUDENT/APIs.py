@@ -11,9 +11,11 @@ from .serializers import *
 from HOME_AREA.forms import * 
 from django.shortcuts import get_object_or_404
 from .models import *
+from random import randint
+from HOME_AREA.tasks import send_email
 from ELEARN_BACKEND.CUSTOME_DECORATOR import user_type_required
 
-#student class to get a student(dashboard courses), post a student(register new), delete student, update his data
+#student class to get a student(dashboard courses), delete student, update his data
 class StudentApi(mixins.CreateModelMixin, mixins.RetrieveModelMixin, 
                 mixins.DestroyModelMixin, mixins.UpdateModelMixin,
                  generics.GenericAPIView):
@@ -26,8 +28,7 @@ class StudentApi(mixins.CreateModelMixin, mixins.RetrieveModelMixin,
                     if isinstance(self.request.user, AnonymousUser) or obj.USER_NAME != self.request.user.USER_NAME  :
                         raise PermissionDenied("You are not allowed to access this resource.")
                     return obj
-                def post(self, request, *args, **kwargs):
-                    return self.create(request, *args, **kwargs)
+
                 def get(self, request, *args , **kwargs):
                     return self.retrieve(request, *args, **kwargs)
                 def put(self, request, *args, **kwargs):
@@ -43,6 +44,7 @@ class StudentApi(mixins.CreateModelMixin, mixins.RetrieveModelMixin,
 execute only the queried course
 
 """
+#look in the above comment please
 class COURSE_student_APIs(mixins.CreateModelMixin, mixins.RetrieveModelMixin, 
                 mixins.DestroyModelMixin, mixins.UpdateModelMixin,
                  generics.GenericAPIView):
@@ -82,3 +84,36 @@ def StudentLogAPI(request):
             return Response({"message": "User logged in successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({'message':"INVALID INPUT"},status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+def VerifyStudentAPI(request):
+    if request.method == 'POST':
+        serialized = VrifySerializer(data =request.data)
+        if serialized.is_valid():
+            try:
+                data = serialized.validated_data
+                verified = CODE_GENERATOR.objects.get(EMAIL = data['EMAIL'] , ACTIVATION_CODE=data["ACTIVATION_CODE"])
+                return Response({"message": "Userverified"}, status=status.HTTP_200_OK)
+            except:
+                raise ValidationError("invalid input")
+        else:
+            return Response({'message':"INVALID INPUT"},status=status.HTTP_404_NOT_FOUND)
+
+def ForgetPassStudentAPI(request):
+    if request.method == 'POST':
+        serializer = ForgetPassSerializer(data = request.data)
+        if serializer.is_valid():
+            try:
+                cd = serializer.validated_data
+                student = STUDENT.objects.get(EMAIL = cd['EMAIL'])
+                verification_code = randint(100000,999999)
+                message =f" this code was sent based on your request to restore the log in credintial ignore if you do not send it  {verification_code}"
+                
+                send_email(cd["EMAIL"],message)
+                store_verify = CODE_GENERATOR.objects.create(USER_VERIFIER=student,ACTIVATION_CODE=verification_code,EMAIL=cd["EMAIL"])
+                return Respond({'message':"code send successfully"}, status = status.HTTP_202_ACCEPTED)
+            except:
+                return Response({'message':"email not found "}, status = status.HTTP_404_NOT_FOUND)
+        else:
+            return Respond("INVALID INPUT")
