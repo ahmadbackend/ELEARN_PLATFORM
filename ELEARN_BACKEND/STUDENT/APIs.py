@@ -1,5 +1,5 @@
 # function to log in , verify , forget password
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from HOME_AREA.models import COURSES
 from rest_framework.response import Response
@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 from .serializers import *
+from HOME_AREA.forms import * 
 from django.shortcuts import get_object_or_404
 from .models import *
 from ELEARN_BACKEND.CUSTOME_DECORATOR import user_type_required
@@ -62,3 +63,22 @@ class COURSE_student_APIs(mixins.CreateModelMixin, mixins.RetrieveModelMixin,
                 #drop the course    
                 def delete(self, request, *args, **kwargs):
                     return self.destroy(request, *args, **kwargs)
+#register and login student
+
+class StudentReg(generics.CreateAPIView):
+    serializer_class = StudentSerializer
+
+    def create(self, request, *args, **kwargs):
+        serialize = self.get_serializer(data =request.data)
+        serialize.is_valid(raise_exception = True)
+        self.perform_create(serialize)
+        return Response({"message": "User created successfully but not activated yet"}, status=status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+def StudentLogAPI(request):
+    if request.method == 'POST':
+        serialized = LogInSerializer(data =request.data)
+        if serialized.is_valid():
+            return Response({"message": "User logged in successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message':"INVALID INPUT"},status=status.HTTP_404_NOT_FOUND)
