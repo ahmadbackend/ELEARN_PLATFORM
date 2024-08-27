@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views, APIs
 
 app_name ='instructor'
 urlpatterns = [
@@ -15,6 +15,9 @@ urlpatterns = [
     path('Publish/<str:courseName>/', views.Publish, name = 'Publish'),
     path('Learners', views.LearnersList.as_view(), name = 'Learners'),
     path('update_status',views.update_status, name = 'update_status'),
+
+    #APIS
+    path('APIs/InstructorAPI/<str:USER_NAME>', APIs.InstructorAPI.as_view(), name = 'InstructorAPI'),
     path('',views.index, name='index')
 ]
 

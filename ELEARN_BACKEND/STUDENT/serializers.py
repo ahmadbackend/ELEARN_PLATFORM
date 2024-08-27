@@ -46,3 +46,4 @@ class VrifySerializer(serializers.ModelSerializer):
         fields = ["ACTIVATION_CODE","EMAIL"]
 class ForgetPassSerializer(serializers.Serializer):
     EMAIL = serializers.EmailField(required=True)
+    
