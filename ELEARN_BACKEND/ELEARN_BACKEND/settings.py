@@ -53,16 +53,25 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'rest_framework',
-    'django_browser_reload'
+    'django_browser_reload',
+    'drf_spectacular',
 
     
 ]
 # rest frame setting 
 REST_FRAMEWORK = {
-
+'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny'
     ]
+}
+# spectacular schema metadata
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'ELEARNplatform API',
+    'DESCRIPTION': 'Creating RESTFUL APIs',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    
 }
 
 MIDDLEWARE = [

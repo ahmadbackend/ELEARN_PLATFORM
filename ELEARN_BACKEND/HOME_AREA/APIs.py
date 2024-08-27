@@ -10,8 +10,8 @@ def Course_list(request):
     # no post allowed from here it is only allowed from instructor area
     if request.method == 'GET':
         queryset = COURSES.objects.all()
-        SerializedCourses = Courses(queryset , many = True)
-        return Response(SerializedCourses.data)
+        Serializer = Courses_Serializer(queryset , many = True)
+        return Response(Serializer.data)
 # to use with logged in student  
 @api_view(['GET'])
 #@permission_classes([IsAuthenticated])
@@ -20,8 +20,8 @@ def CourseDetails_fullview(request, courseName):
     
     if request.method == 'GET':
         queryset = COURSES.objects.get(COURSE_NAME = courseName)
-        SerializedCourse = CourseDetailsSerializer(queryset)
-        return Response(SerializedCourse.data)
+        Serializer = CourseDetailsSerializer(queryset)
+        return Response(Serializer.data)
 
 
 # if i need general view for visitor 
