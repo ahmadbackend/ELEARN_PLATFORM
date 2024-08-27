@@ -18,6 +18,7 @@ urlpatterns = [
     path('enrol/<str:courseName>/', views.Enroll, name='Enroll'),  # Make sure there is a trailing slash
 
     #student APIs area################
+    path('APIs/Forms/VerifyStudentAPI',APIs.VerifyStudentAPI),
     path('APIs/Forms/StudentLogAPI',APIs.StudentLogAPI),
     path('APIs/Forms/StudentReg',APIs.StudentReg.as_view()),
     path('APIs/<str:course__COURSE_NAME>',APIs.COURSE_student_APIs.as_view()),

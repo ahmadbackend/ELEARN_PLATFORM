@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+
 from HOME_AREA.serializers import Courses_Serializer
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
@@ -19,9 +20,9 @@ class CourseStudentSerializer(serializers.ModelSerializer):
 
      
 class LogInSerializer(serializers.Serializer):
-    USER_NAME = Serializer.CharField(required=True)
-    EMAIL =Serializer.EmailField(required=True)
-    PASSWORD = Serializer.CharField(required=True)
+    USER_NAME = serializers.CharField(required=True)
+    EMAIL =serializers.EmailField(required=True)
+    PASSWORD = serializers.CharField(required=True)
    
     def validate(self, data):
         user_name = data.get('USER_NAME')
@@ -37,3 +38,11 @@ class LogInSerializer(serializers.Serializer):
                 raise ValidationError({"message": "User is valid but not active", "Isactive": False}) 
         except:
             raise ValidationError("Invalid credentials")
+
+class VrifySerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = CODE_GENERATOR
+        fields = ["ACTIVATION_CODE","EMAIL"]
+class ForgetPassSerializer(serializers.Serializer):
+    EMAIL = serializers.EmailField(required=True)
