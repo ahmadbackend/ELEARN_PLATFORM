@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_browser_reload',
     'drf_spectacular',
+    'django_celery_beat',
 
     
 ]
@@ -208,3 +209,5 @@ CACHES = {
         }
     }
 }
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+#command to run celery celery -A your_project_name beat

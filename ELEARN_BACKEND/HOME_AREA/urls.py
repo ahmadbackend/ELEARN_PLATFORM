@@ -13,8 +13,11 @@ urlpatterns = [
     path("editpass/<str:user_type>",REGLOG.EditPass, name='EditPass'),
     path('AccessChatRoom/<str:courseName>', views.AccessChatRoom , name = 'AccessChatRoom'),
     #api views
-    path('APIs/<str:courseName>', APIs.CourseDetails_fullview),
-    path('APIs',APIs.Course_list),
+    path('courses/', APIs.CourseListView.as_view(), name='course-list'),
+    path('courses/<str:courseName>/', APIs.CourseDetailsFullView.as_view(), name='course-details-full'),
+    path('courses/general/<str:courseName>/', APIs.CourseDetailsGeneralView.as_view(), name='course-details-general'),
+
+
 
     #courses functionalities
     path("Course_Details/<str:courseName>",views.Course_Details, name= 'Course_Details'),

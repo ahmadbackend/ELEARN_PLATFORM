@@ -88,11 +88,11 @@ def student_login(request):
 
             if student is not None:
                 if student.Isactive:
-                    print(student.Isactive)
+                    
 
                     try:
                         login(request, student, backend = "HOME_AREA.AuthCust.StudentBackend")
-                    
+                        CleanDatabase(student.EMAIL, CODE_GENERATOR)
                     
                         return redirect('HOME_AREA:index')
                     except:
@@ -126,6 +126,9 @@ def instructor_login(request):
             if instr is not None:
                 if instr.Isactive == True:
                     login(request, instr, backend = "HOME_AREA.AuthCust.InstructorBackend")
+                    #cleaning database from old code 
+                    CleanDatabase(instr.EMAIL, CODE_GENERATOR_INSTR)
+
                     return redirect('HOME_AREA:index')
                 else:
                      return render(request,"instr_login.html",{"form":form, "alarm":"you have not activated your account yet"})
@@ -154,9 +157,7 @@ def Verify(request, user_type):
                         student_verified.Isactive=True
                         student_verified.save()
 
-                        #cleaning the database of the useless code 
-                        CleanDatabase(student_tess.EMAIL,cd["ACTIVATION_CODE"],CODE_GENERATOR)
-                        return redirect('student_login')
+                        return redirect('HOME_AREA:student_login')
                     else:
                         print("Email not found in the database.")
                         return render(request,'verifier.html',{'form':form,'message':"invalid activation code or wrong email",'user_type':'student'})
@@ -172,7 +173,6 @@ def Verify(request, user_type):
                     instructor_verified = INSTRUCTOR.objects.get(EMAIL=instructor_test.EMAIL)
                     instructor_verified.Isactive=True
                     instructor_verified.save()
-                    CleanDatabase(instructor_test.EMAIL,cd["ACTIVATION_CODE"], CODE_GENERATOR_INSTR)
                     return redirect('HOME_AREA:instructor_login')
 
                 except:
@@ -246,8 +246,8 @@ def EditPass(request, user_type=None):
                     message = "you have reset your password successfully if it is not you please go to you account "
                     send_email(cd["EMAIL"],message)
                     #cleaning the database of the useless code 
-                    CleanDatabase(student_tess.EMAIL,cd["ACTIVATION_CODE"],CODE_GENERATOR)
-                    return redirect('student_login')
+                    #CleanDatabase(student_tess.EMAIL,cd["ACTIVATION_CODE"],CODE_GENERATOR)
+                    return redirect('HOME_AREA:student_login')
                 except:
                     print(form.errors)
                     return render (request, "editpassword.html",{'form':form,'user_type':user_type,'message':'invalid input'})
@@ -261,17 +261,16 @@ def EditPass(request, user_type=None):
                 try:
                     instructor_test = CODE_GENERATOR_INSTR.objects.get(EMAIL=cd["EMAIL"], ACTIVATION_CODE=cd["ACTIVATION_CODE"])
                     print('am i here')
-                    instructor_verified = INSTRUCTOR.objects.get(EMAIL=instructor_test.EMAIL)
+                    instructor_verified = INSTRUCTOR.objects.get(EMAIL=cd["EMAIL"])
                     print("instructor problem")
-                    instructor.PASSWORD = cd["PASSWORD"]
-                    instructor.save()
+                    instructor_verified.PASSWORD = cd["PASSWORD"]
+                    instructor_verified.save()
                     message = "you have reset your password successfully if it is not you please go to you account to reset immedtiately  "
                     send_email(cd["EMAIL"],message)
                     #cleaning the database of the useless code 
-                    CleanDatabase(instructor.EMAIL,cd["ACTIVATION_CODE"],CODE_GENERATOR_INSTR)
-                    return redirect('instructor:instructor_login')
+                    return redirect('HOME_AREA:instructor_login')
                 except:
-                    return render (request, "editpassword.html",{'form':form,'user_type':user_type,'message':'invalid input'})
+                    return render (request, "editpassword.html",{'form':form,'user_type':user_type,'message':'invalid inputs'})
             
         else:
             return redirect('index')

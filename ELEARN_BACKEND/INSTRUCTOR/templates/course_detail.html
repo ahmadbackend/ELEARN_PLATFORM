@@ -5,14 +5,13 @@
 
 
 {%block title%} course details {%endblock%}
-{%block main%}
-    <h1> {{course.COURSE_NAME}}</h1>
+{% block main %}
+    <h1>{{ course.COURSE_NAME }}</h1>
     <div>
         <h1>Lectures</h1>
-        {% for lecture in course.lectures %}
-            
-            <h2>{{lecture.NAME}}</h2>
+        {% for lecture in courseLectures.course %}
+            <h2>{{ lecture.NAME }}</h2>
         {% endfor %}
     </div>
-    
-{%endblock%}
+    <a href="{% url 'instructor:AddLecture' course.COURSE_NAME %}">Add Lectures</a>
+{% endblock %}
