@@ -86,19 +86,20 @@
                 </form>
 
             </div>
+            <div>
+                <a href="{%url 'HOME_AREA:AccessChatRoom' course.COURSE_NAME%}" target="_blank">chat with other enrolled students</a>
+            </div>
 
             {% else %}
             <div class="mt-8 p-6 bg-gray-100 text-gray-800 rounded-lg shadow-md">
-                <p><a href="{% url 'STUDENTS:Enroll' course.COURSE_NAME %}" class="text-blue-600 hover:text-blue-800">Enroll now so you can watch the lectures</a></p>
+                <p><a href="{% url 'STUDENTS:Enroll' course.COURSE_NAME %}" class="text-blue-600 hover:text-blue-800">Enroll now so you can watch the lectures and chat with other students</a></p>
             </div>
             {% endif %}
         </div>
     </div>
     {% endif %}
 </div>
-<div>
-    <a href="{%url 'HOME_AREA:AccessChatRoom' course.COURSE_NAME%}" target="_blank">chat with other enrolled students</a>
-</div>
+
 
 
 <script>

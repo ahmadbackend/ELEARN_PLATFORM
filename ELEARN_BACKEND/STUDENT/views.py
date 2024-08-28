@@ -22,7 +22,7 @@ def update_status(request):
 def Enroll(request,courseName):
     try:
         print("get out")
-        student = STUDENT.objects.get(USER_NAME = request.user)
+        student = STUDENT.objects.get(USER_NAME = request.user.USER_NAME)
         course = COURSES.objects.get(COURSE_NAME = courseName)
         print("user found but student adding failed")
         COURSE_LIST.objects.create(course =course, student = student)
@@ -120,10 +120,7 @@ def RemoveBlockRequest(request, courseName):
             return redirect('HOME_AREA:index')
         except:
             main_url = reverse('HOME_AREA:Course_Details',args=[courseName])
-            fragment = {'message':'something went wrong please try again later if persist kindly contact customer support'}
-            url_message = urlencode(fragment)
-            full_url = f'{main_url}?{url_message}'
-            return redirect(full_url)
+            return redirect(main_url)
 
 @user_type_required('student')
 def AddRating(request, courseName):

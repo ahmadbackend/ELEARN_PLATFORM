@@ -36,9 +36,9 @@ def test_task():
     return "Test completed"
 
 @shared_task
-def CleanDatabase(email, code,database):
+def CleanDatabase(email, database):
     try:
-        target = database.objects.get(EMAIL=email,ACTIVATION_CODE=code)
+        target = database.objects.filter(EMAIL=email)
         target.delete()
         print ("deleted peacefully")
         return "DONE"

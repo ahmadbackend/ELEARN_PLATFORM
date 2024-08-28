@@ -7,6 +7,7 @@ from HOME_AREA.models import COURSES, LECTURES
 from STUDENT.models import COURSE_LIST, STUDENT
 from .models import *
 from .forms import *
+from HOME_AREA.tasks import send_email
 from ELEARN_BACKEND.CUSTOME_DECORATOR import *
 from django.core.cache import cache
 from datetime import timedelta
@@ -65,9 +66,18 @@ class CourseDetailView(InstructorRequiredMixin, DetailView):
     model = COURSES
     template_name = 'course_detail.html'
     context_object_name = 'course'
-
+    #needed to override so i can search by course name  useless pain 
     def get_object(self, queryset=None):
-        return COURSES.objects.get(COURSE_NAME=self.kwargs['courseName'])
+        # Fetch the course by COURSE_NAME instead of pk or slug
+        courseName = self.kwargs.get('courseName')
+        return COURSES.objects.get(COURSE_NAME=courseName)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        courseLectures={}
+        course = self.get_object()
+        lectures = LECTURES.objects.filter(course = course)
+        context['courseLectures'] = {course: lectures}
+        return context
 
 class CourseDeleteView(InstructorRequiredMixin, DeleteView):
     model = COURSES
@@ -128,11 +138,11 @@ def AddLecture(request, courseName):
             message ="lecture added successfully"
             return redirect('instructor:Dashboard')
         else:
-            return render(request, 'instructor:AddLecture.html', {'form':form, 'course':courseName})
+            return render(request, 'AddLecture.html', {'form':form, 'course':courseName})
 
     else:
         form = AddLectureForm()
-        return render(request, 'instructor:AddLecture.html', {'form':form, 'course':courseName})
+        return render(request, 'AddLecture.html', {'form':form, 'course':courseName})
 
 def HandlLectures(request,courseName):
     Course = COURSES.objects.get(COURSE_NAME = courseName)
@@ -174,16 +184,14 @@ def UnBlock(request):
             message = "no user matched your input"
            
         return redirect('instructor:Dashboard')    
-"""
-@user_type_required(user='instructor')
-def DeleteCourse(request, courseName):
-    pass
+def SendToFollowers(request, courseName):
+    if request.method == 'POST':
+        message = request.POST.get('message')
+        course = COURSES.objects.get(COURSE_NAME = courseName)
+        students = COURSE_LIST.objects.filter(course = course)
+        print(message)
+        for student in students:
 
-@user_type_required(user='instructor')
-def EditCourse(request, courseName):
-    pass
-
-@user_type_required(user='instructor')
-def ViewCourse(request, courseName):
-    pass
-"""
+            send_email(student.student.EMAIL, message)
+        
+        return redirect("instructor:Dashboard")

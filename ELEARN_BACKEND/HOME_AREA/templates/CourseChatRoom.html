@@ -2,16 +2,27 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %} {{course}} chat room {% endblock %}
+{% block title %} {{course}} Chat Room {% endblock %}
 
 {% block main %}
-    <div id="chat-log" ></div><br>
-    <input id="chat-message-input" type="text" size="100"><br>
-    <input id="chat-message-submit" type="button" value="Send">
-    {{ course|json_script:"course-name" }}
-    {{user|json_script:"user-name"}}
-   
-    <script>
+<div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+    <div class="w-full max-w-2xl bg-white shadow-md rounded-lg p-4">
+        <h1 class="text-2xl font-bold text-center text-gray-700 mb-4">{{ course }} Chat Room</h1>
+
+        <div id="chat-log" class="h-80 overflow-y-auto border border-gray-300 rounded p-3 bg-gray-50 mb-4"></div>
+        
+        <div class="flex items-center">
+            <input id="chat-message-input" type="text" size="100" class="flex-grow p-2 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Type your message...">
+            <input id="chat-message-submit" type="button" value="Send" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-r cursor-pointer">
+        </div>
+    </div>
+</div>
+
+{{ course|json_script:"course-name" }}
+{{ user|json_script:"user-name" }}
+
+<script>
+
         const roomName = JSON.parse(document.getElementById('course-name').textContent);
         const userName = JSON.parse(document.getElementById('user-name').textContent);
         

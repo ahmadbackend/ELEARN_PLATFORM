@@ -15,9 +15,13 @@ urlpatterns = [
     path('Publish/<str:courseName>/', views.Publish, name = 'Publish'),
     path('Learners', views.LearnersList.as_view(), name = 'Learners'),
     path('update_status',views.update_status, name = 'update_status'),
-
+    path('SendToFollowers/<str:courseName>', views.SendToFollowers, name = 'SendToFollowers'),
     #APIS
     path('APIs/InstructorAPI/<str:USER_NAME>', APIs.InstructorAPI.as_view(), name = 'InstructorAPI'),
+    path('APIs/CourseCRUDAPI/<int:pk>', APIs.CourseCRUDAPI.as_view()),
+    path('APIs/LecturesCRUDsAPI/<str:course__COURSE_NAME>', APIs.LecturesCRUDsAPI.as_view()),
+    path('APIS/UNBlockHandlerAPI', APIs.UNBlockHandlerAPI, name = 'UNBlockHandlerAPI'),
+    path('APIS/BlookHandlerAPI', APIs.BlookHandlerAPI, name = 'BlookHandlerAPI'),
     path('',views.index, name='index')
 ]
 
