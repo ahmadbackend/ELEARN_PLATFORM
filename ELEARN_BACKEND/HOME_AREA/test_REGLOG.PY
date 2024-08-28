@@ -17,8 +17,7 @@ def test_instructor_reg_form_valid_data(self, mock_send_email):
         'LAST_NAME': 'Doe',
         "USER_NAME":"KINGKONG",
         "PHONE":"2365985",
-        'picture': picture  # Pass the mocked file here
-        # Add other necessary fields here
+        'picture': picture  
     }
 
     response = self.client.post(self.url, data, follow=True)
@@ -41,7 +40,7 @@ def test_instructor_reg_form_valid_data(self, mock_send_email):
         data = {
             'EMAIL': '',
             'PASSWORD': '',
-            # Missing fields
+            
         }
 
         response = self.client.post(self.url, data)
