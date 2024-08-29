@@ -16,7 +16,10 @@ urlpatterns = [
     path('Learners', views.LearnersList.as_view(), name = 'Learners'),
     path('update_status',views.update_status, name = 'update_status'),
     path('SendToFollowers/<str:courseName>', views.SendToFollowers, name = 'SendToFollowers'),
+    path('DeleteLecture/<str:courseName>/<str:lectureName>', views.LectureDeleteView.as_view(), name = 'DeleteLecture'),
     #APIS
+    path('APIs/InstructorLogAPI', APIs.InstructorLogAPI.as_view(), name = 'InstructorLogAPI'),
+    path('APIs/InstrucotReg', APIs.InstrucotReg.as_view(), name = 'InstrucotReg'),
     path('APIs/InstructorAPI/<str:USER_NAME>', APIs.InstructorAPI.as_view(), name = 'InstructorAPI'),
     path('APIs/CourseCRUDAPI/<int:pk>', APIs.CourseCRUDAPI.as_view()),
     path('APIs/LecturesCRUDsAPI/<str:course__COURSE_NAME>', APIs.LecturesCRUDsAPI.as_view()),

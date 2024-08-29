@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import DetailView, UpdateView, DeleteView, ListView
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from HOME_AREA.models import COURSES, LECTURES
 from STUDENT.models import COURSE_LIST, STUDENT
@@ -73,10 +74,10 @@ class CourseDetailView(InstructorRequiredMixin, DetailView):
         return COURSES.objects.get(COURSE_NAME=courseName)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        courseLectures={}
         course = self.get_object()
         lectures = LECTURES.objects.filter(course = course)
-        context['courseLectures'] = {course: lectures}
+        print(lectures)
+        context['courseLectures'] = lectures
         return context
 
 class CourseDeleteView(InstructorRequiredMixin, DeleteView):
@@ -88,8 +89,24 @@ class CourseDeleteView(InstructorRequiredMixin, DeleteView):
         return COURSES.objects.get(COURSE_NAME=self.kwargs['courseName'])
 
     def get_success_url(self):
-        return redirect('instructor:index') 
+        return redirect('instructor:Dashboard') 
+#deleting lecture 
+class LectureDeleteView(InstructorRequiredMixin, DeleteView):
+    template_name = 'lecture_confirm_delete.html'
+    model = LECTURES
+    context_object_name = 'lecture'
+    def get_object(self, queryset=None):
+        course_name = self.kwargs.get('courseName')
+        lecture_name = self.kwargs.get('lectureName')
+        instr = get_object_or_404(INSTRUCTOR, USER_NAME=self.request.user.USER_NAME)
+        # Fetch the specific lecture by course name, lecture name, and instructor
+        return get_object_or_404(LECTURES, NAME=lecture_name, course__COURSE_NAME=course_name, course__instructor=instr)
 
+    def get_success_url(self):
+        # Redirect to instructor's dashboard after successful deletion
+        return reverse_lazy('instructor:Dashboard')
+
+                              
 @user_type_required('instructor')
 def Dashboard(request):
     instruct = INSTRUCTOR.objects.get(USER_NAME = request.user)
@@ -148,7 +165,7 @@ def HandlLectures(request,courseName):
     Course = COURSES.objects.get(COURSE_NAME = courseName)
     lectures = LECTURES.objects.filter(course = Course)
     print(lectures.count())
-    return render(request, 'HandlLectures.html',{'lectures':lectures})
+    return render(request, 'HandlLectures.html',{'lectures':lectures, 'course':courseName})
     
 def Publish(request, courseName):
     instr = INSTRUCTOR.objects.get(USER_NAME = request.user)
@@ -173,12 +190,14 @@ def Block(request):
        
 def UnBlock(request):
     if request.method == 'POST':
-        cd = request.POST
+        cd = request.POST.get('unblocked')
+        print(f'cd is {cd}')
         try:
-            BAD_STUDENT = STUDENT.objects.get(USER_NAME = cd["unblocked"])
+            BAD_STUDENT = STUDENT.objects.get(USER_NAME = cd)
+            print(f'bad student is {BAD_STUDENT}')
             instruc = INSTRUCTOR.objects.get(USER_NAME = request.user)
-            unblocked = BLOCK_LIST.objects.delete(students = BAD_STUDENT , instructors = instruc )
-            unblocked.save()
+            unblocked = BLOCK_LIST.objects.get(students = BAD_STUDENT , instructors = instruc )
+            unblocked.delete()
             message = "learner unblocked successfully"
         except:
             message = "no user matched your input"

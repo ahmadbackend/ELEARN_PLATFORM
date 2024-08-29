@@ -1,27 +1,28 @@
-{%extends 'base.html'%}
-{% load static%}
+{% extends 'base.html' %}
+{% load static %}
 
-
-{%block title%} process lectures {%endblock%}
-{%block main%}
-    <table>
+{% block title %} Process Lectures {% endblock %}
+{% block main %}
+<div class="container mx-auto mt-8">
+    <h1 class="text-2xl font-bold mb-6">Lectures</h1>
+    <table class="min-w-full bg-white border border-gray-300">
         <thead>
-        <row>
-            <th> lecture name</th>
-            <th>EDIT</th>
-            <th>DELETE</th>
-        </row>
+            <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                <th class="py-3 px-6 text-left">Lecture Name</th>
+                <th class="py-3 px-6 text-center">Delete</th>
+            </tr>
         </thead>
-        <tbody>
-            {%for lecture in lectures%}
-            <row>
-                <td>{{lecture}}</td>
-                <td><a href="#">edit</a></td>
-                <td><a href="#">delete</a></td>
-            </row>
-            {%endfor%}
-        </tbody>
+        <tbody class="text-gray-600 text-sm font-light">
+            {% for lecture in lectures %}
+            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                <td class="py-3 px-6 text-left">{{ lecture }}</td>
 
+                <td class="py-3 px-6 text-center">
+                    <a href="{%url 'instructor:DeleteLecture' course lecture.NAME%}" class="text-red-600 hover:text-red-800">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-    
-{%endblock%}
+</div>
+{% endblock %}

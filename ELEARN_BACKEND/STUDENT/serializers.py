@@ -19,7 +19,7 @@ class CourseStudentSerializer(serializers.ModelSerializer):
         depth = 1
 
      
-class LogInSerializer(serializers.Serializer):
+class LogInSerializerStudent(serializers.Serializer):
     USER_NAME = serializers.CharField(required=True)
     EMAIL =serializers.EmailField(required=True)
     PASSWORD = serializers.CharField(required=True)

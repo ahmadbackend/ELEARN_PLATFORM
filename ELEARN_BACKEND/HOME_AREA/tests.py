@@ -115,3 +115,5 @@ class StudentFormTests(TestCase):
         self.assertFalse(STUDENT.objects.filter(EMAIL='').exists())
         ###################################################################################
                             ## testing log in functionality ##############
+
+                       

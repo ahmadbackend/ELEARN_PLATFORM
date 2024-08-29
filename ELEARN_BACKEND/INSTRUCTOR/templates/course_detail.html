@@ -7,11 +7,28 @@
 {%block title%} course details {%endblock%}
 {% block main %}
     <h1>{{ course.COURSE_NAME }}</h1>
-    <div>
-        <h1>Lectures</h1>
-        {% for lecture in courseLectures.course %}
-            <h2>{{ lecture.NAME }}</h2>
-        {% endfor %}
+    <div class="container mx-auto mt-8">
+        <h1 class="text-2xl font-bold mb-6">Lectures</h1>
+        <table class="min-w-full bg-white border border-gray-300">
+            <thead>
+                <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                    <th class="py-3 px-6 text-left">Lecture Name</th>
+                    <th class="py-3 px-6 text-center">Delete</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-600 text-sm font-light">
+                {% for lecture in courseLectures %}
+                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                    <td class="py-3 px-6 text-left">{{ lecture.NAME }}</td>
+
+                    <td class="py-3 px-6 text-center">
+                        <a href="{%url 'instructor:DeleteLecture' course.COURSE_NAME lecture.NAME%}" class="text-red-600 hover:text-red-800">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     <a href="{% url 'instructor:AddLecture' course.COURSE_NAME %}">Add Lectures</a>
 {% endblock %}
+

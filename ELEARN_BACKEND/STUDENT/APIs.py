@@ -1,10 +1,10 @@
 # function to log in , verify , forget password
 from rest_framework import generics, status
-from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from HOME_AREA.models import COURSES
+
 from rest_framework.response import Response
 from rest_framework import routers, status, mixins
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 from .serializers import *
@@ -71,6 +71,7 @@ class COURSE_student_APIs(mixins.CreateModelMixin, mixins.RetrieveModelMixin,
 #register and login student
 
 class StudentReg(generics.CreateAPIView):
+    serializer_class = StudentSerializer
 
     def create(self, request, *args, **kwargs):
         serialize = self.get_serializer(data =request.data)
@@ -78,50 +79,49 @@ class StudentReg(generics.CreateAPIView):
         self.perform_create(serialize)
         return Response({"message": "User created successfully but not activated yet"}, status=status.HTTP_201_CREATED)
 
-@api_view(['POST'])
-def StudentLogAPI(request):
-    class studenty:
-        serializer_class = LogInSerializer
-    if request.method == 'POST':
-        serialized = studenty.serializer_class(data =request.data)
+class StudentLogAPI(APIView):
+    serializer_class = LogInSerializerStudent
+
+    def post(self, request):
+        serialized = self.serializer_class(data=request.data)
         if serialized.is_valid():
             return Response({"message": "User logged in successfully"}, status=status.HTTP_200_OK)
         else:
-            return Response({'message':"INVALID INPUT"},status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': "INVALID INPUT"}, status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['POST'])
-def VerifyStudentAPI(request):
-    class OPENai:
-        serializer_class = VrifySerializer
-    if request.method == 'POST':
-        serialized = OPENai.serializer_class(data =request.data)
+
+class VerifyStudentAPI(APIView):
+    serializer_class = VrifySerializer
+
+    def post(self, request):
+        serialized = self.serializer_class(data=request.data)
         if serialized.is_valid():
             try:
                 data = serialized.validated_data
-                verified = CODE_GENERATOR.objects.get(EMAIL = data['EMAIL'] , ACTIVATION_CODE=data["ACTIVATION_CODE"])
-                return Response({"message": "Userverified"}, status=status.HTTP_200_OK)
-            except:
+                verified = CODE_GENERATOR.objects.get(EMAIL=data['EMAIL'], ACTIVATION_CODE=data["ACTIVATION_CODE"])
+                return Response({"message": "User verified"}, status=status.HTTP_200_OK)
+            except CODE_GENERATOR.DoesNotExist:
                 raise ValidationError("invalid input")
         else:
-            return Response({'message':"INVALID INPUT"},status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': "INVALID INPUT"}, status=status.HTTP_404_NOT_FOUND)
 
-def ForgetPassStudentAPI(request):
-    class Forget:
-        serializer_class = ForgetPassSerializer
-    if request.method == 'POST':
-        serializer = Forget.serializer_class(data = request.data)
+class ForgetPassStudentAPI(APIView):
+    serializer_class = ForgetPassSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             try:
                 cd = serializer.validated_data
-                student = STUDENT.objects.get(EMAIL = cd['EMAIL'])
-                verification_code = randint(100000,999999)
-                message =f" this code was sent based on your request to restore the log in credintial ignore if you do not send it  {verification_code}"
+                student = STUDENT.objects.get(EMAIL=cd['EMAIL'])
+                verification_code = randint(100000, 999999)
+                message = f"this code was sent based on your request to restore the login credential. Ignore if you did not send it: {verification_code}"
                 
-                send_email(cd["EMAIL"],message)
-                store_verify = CODE_GENERATOR.objects.create(USER_VERIFIER=student,ACTIVATION_CODE=verification_code,EMAIL=cd["EMAIL"])
-                return Respond({'message':"code send successfully"}, status = status.HTTP_202_ACCEPTED)
-            except:
-                return Response({'message':"email not found "}, status = status.HTTP_404_NOT_FOUND)
+                send_email(cd["EMAIL"], message)
+                CODE_GENERATOR.objects.create(USER_VERIFIER=student, ACTIVATION_CODE=verification_code, EMAIL=cd["EMAIL"])
+                return Response({'message': "code sent successfully"}, status=status.HTTP_202_ACCEPTED)
+            except STUDENT.DoesNotExist:
+                return Response({'message': "email not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
-            return Respond("INVALID INPUT")
+            return Response("INVALID INPUT", status=status.HTTP_400_BAD_REQUEST)
