@@ -1,6 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from HOME_AREA.models import COURSES
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import routers, status, mixins
 from rest_framework.permissions import IsAuthenticated
@@ -95,6 +96,26 @@ class LecturesCRUDsAPI(IsInstructor, mixins.CreateModelMixin, mixins.RetrieveMod
                     return self.destroy(request, *args, **kwargs)
                 def get(self, request, *args , **kwargs):
                     return self.retrieve(request, *args, **kwargs)
+#register new instrcutor 
+class InstrucotReg(generics.CreateAPIView):
+    serializer_class = InstructorSerializer
+    def create(self, request, *args, **kwargs):
+        serialize = self.get_serializer(data =request.data)
+        serialize.is_valid(raise_exception = True)
+        self.perform_create(serialize)
+        return Response({"message": "User created successfully but not activated yet"}, status=status.HTTP_201_CREATED)
+
+class InstructorLogAPI(APIView):
+    serializer_class = LogInSerializer
+
+    def post(self, request):
+        serialized = self.serializer_class(data=request.data)
+        if serialized.is_valid():
+            return Response({"message": "User logged in successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': "INVALID INPUT"}, status=status.HTTP_404_NOT_FOUND)
+
+
 @api_view(["POST"])
 def UNBlockHandlerAPI(request):
     if request.method == 'POST':

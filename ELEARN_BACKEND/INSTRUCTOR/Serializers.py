@@ -22,6 +22,27 @@ class LecturesCRUDserializer(serializers.ModelSerializer):
 
 class BlockHandlerSerializer(serializers.Serializer):
     USER_NAME = serializers.CharField(required = True)
+
+
+class LogInSerializer(serializers.Serializer):
+    USER_NAME = serializers.CharField(required=True)
+    EMAIL =serializers.EmailField(required=True)
+    PASSWORD = serializers.CharField(required=True)
+   
+    def validate(self, data):
+        user_name = data.get('USER_NAME')
+
+        email = data.get('EMAIL')
+        password = data.get('PASSWORD')
+        try:
+            instructor = get_object_or_404(INSTRUCTOR, USER_NAME = user_name,
+            PASSWORD = password, EMAIL = email)
+            if student.ISactive:
+                return data
+            else:
+                raise ValidationError({"message": "User is valid but not active", "Isactive": False}) 
+        except:
+            raise ValidationError("Invalid credentials")
    
 
 
