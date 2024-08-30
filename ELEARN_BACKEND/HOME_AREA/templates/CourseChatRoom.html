@@ -1,4 +1,3 @@
-<!-- chat/templates/chat/room.html -->
 {% extends 'base.html' %}
 {% load static %}
 
@@ -8,8 +7,39 @@
 <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
     <div class="w-full max-w-2xl bg-white shadow-md rounded-lg p-4">
         <h1 class="text-2xl font-bold text-center text-gray-700 mb-4">{{ course }} Chat Room</h1>
+       
+        <div id="chat-log" class="h-80 overflow-y-auto border border-gray-300 rounded p-3 bg-gray-50 mb-4">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
-        <div id="chat-log" class="h-80 overflow-y-auto border border-gray-300 rounded p-3 bg-gray-50 mb-4"></div>
+    {% if chats%}
+
+        {%for chat in chats%}
+        {% if chat.content_type.model == 'student' %}
+        <p class="flex items-center space-x-2 p-2 bg-white rounded-lg shadow-md">
+                <a href="{% url 'STUDENTS:DashboardWithUserName' chat.sender.USER_NAME %}" 
+                   class="font-semibold text-blue-600 hover:underline">
+                    {{ chat.sender.USER_NAME }}
+                    
+                </a>
+                <span class="text-gray-700">{{ chat.message }}</span>
+                <span class="text-xs text-gray-500">sent at {{ chat.TimeStamp|date:"M d, Y, g:i a" }}</span>
+            </p>
+            <br>
+
+             {%elif chat.content_type.model == 'instructor'%}
+             <p class="flex items-center space-x-2 p-2 bg-white rounded-lg shadow-md">
+                <a href="#" 
+                   class="font-semibold text-blue-600 hover:underline">
+                    {{ chat.sender.USER_NAME }}
+                </a>
+                <span class="text-gray-700">{{ chat.message }}</span>
+                <span class="text-xs text-gray-500">sent at {{ chat.TimeStamp|date:"M d, Y, g:i a" }}</span>
+            </p>
+            <br>
+            {%endif%}
+        {%endfor%}
+    {%endif%}
+        </div>
         
         <div class="flex items-center">
             <input id="chat-message-input" type="text" size="100" class="flex-grow p-2 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Type your message...">
@@ -20,20 +50,23 @@
 
 {{ course|json_script:"course-name" }}
 {{ userName|json_script:"user-name" }}
+{{ userCat|json_script:"user-cat" }}
+{{ coursy|json_script:"realcourse" }}
+
+
 
 <script>
 
         const roomName = JSON.parse(document.getElementById('course-name').textContent);
         const userName = JSON.parse(document.getElementById('user-name').textContent);
+        const userCat = JSON.parse(document.getElementById('user-cat').textContent);
+        const realCourseName = JSON.parse(document.getElementById('realcourse').textContent);
+
         
         
 
         const chatSocket = new WebSocket(
-            'ws://'
-            + window.location.host
-            + '/ws/chat/'
-            + roomName
-            + '/'
+            'ws://' + window.location.host + '/ws/chat/' + roomName + '/' + realCourseName + '/'
         );
         //
         chatSocket.onmessage = function(e) {
@@ -54,6 +87,7 @@
         document.querySelector('#chat-message-input').onkeyup = function(e) {
             if (e.key === 'Enter') {  // enter, return
                 document.querySelector('#chat-message-submit').click();
+
             }
         };
 
@@ -63,10 +97,31 @@
             console.log(`the message is ${message} `)
             chatSocket.send(JSON.stringify({
                 'message': message,
-                'userName':userName
+                'userName':userName,
+                'course':realCourseName
+                
             }));
-            messageInputDom.value = '';
-        };
+           
+
+            fetch('/SaveChats/',{
+                method:'POST',
+                headers:{
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+
+                        },
+                body:JSON.stringify({
+                    'message':message,
+                    'userName':userName,
+                    'userCat':userCat,
+                    'course':realCourseName
+                })
+                }).then(response => response.json())
+                .then(data => {
+                    console.log('Message saved:');
+                })
+                messageInputDom.value = '';
+             };
     </script>
 
 {%endblock%}

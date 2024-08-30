@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinLengthValidator, RegexValidator
+
 #Create your models here.
 class INSTRUCTOR(models.Model):
     FIRST_NAME = models.CharField(max_length=50 , null=False , blank=False)
