@@ -11,7 +11,8 @@ urlpatterns = [
     path("forget/<str:user_type>",REGLOG.Forget , name="Forget" ),
     path("logout",REGLOG.Logout, name='Logout'),
     path("editpass/<str:user_type>",REGLOG.EditPass, name='EditPass'),
-    path('AccessChatRoom/<str:courseName>', views.AccessChatRoom , name = 'AccessChatRoom'),
+    path('AccessChatRoom/<str:courseName>/<str:userCat>', views.AccessChatRoom , name = 'AccessChatRoom'),
+    path('SaveChats/', views.SaveTOchat, name = 'SaveTOchat'),
     #api views
     path('courses/', APIs.CourseListView.as_view(), name='course-list'),
     path('courses/<str:courseName>/', APIs.CourseDetailsFullView.as_view(), name='course-details-full'),

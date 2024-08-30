@@ -59,7 +59,7 @@
         </div>
 
         <div class="mt-8">
-            {% if enrolled %}
+            {% if enrolled  and user_cat %}
             <div class="p-6 bg-green-100 text-green-800 rounded-lg shadow-md">
                 <p>You are enrolled in this course. Enjoy learning!</p>
                 <form action="{% url 'STUDENTS:AddReview' course.COURSE_NAME %}" method="post" class="mt-4">
@@ -87,7 +87,9 @@
 
             </div>
             <div>
-                <a href="{%url 'HOME_AREA:AccessChatRoom' course.COURSE_NAME%}" target="_blank">chat with other enrolled students</a>
+                
+                <a href="{%url 'HOME_AREA:AccessChatRoom' course.COURSE_NAME user_cat %}" target="_blank">chat with other enrolled students</a>
+                
             </div>
 
             {% else %}

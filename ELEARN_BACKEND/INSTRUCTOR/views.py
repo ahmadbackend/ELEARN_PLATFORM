@@ -176,11 +176,12 @@ def Publish(request, courseName):
     return redirect('instructor:Dashboard')
 def Block(request):
     if request.method == 'POST':
-        cd = request.POST
+        cd = request.POST.get('blocked')
+        print(f' here is the blocked student{cd}')
         try:
-            BAD_STUDENT = STUDENT.objects.get(USER_NAME = cd["blocked"])
+            BAD_STUDENT = STUDENT.objects.get(USER_NAME = cd)
             instruc = INSTRUCTOR.objects.get(USER_NAME = request.user)
-            blocked = BLOCK_LIST.objects.add(students = BAD_STUDENT , instructors = instruc )
+            blocked = BLOCK_LIST.objects.create(students = BAD_STUDENT , instructors = instruc )
             blocked.save()
         except:
             message = "no user matched your input "
@@ -195,7 +196,7 @@ def UnBlock(request):
         try:
             BAD_STUDENT = STUDENT.objects.get(USER_NAME = cd)
             print(f'bad student is {BAD_STUDENT}')
-            instruc = INSTRUCTOR.objects.get(USER_NAME = request.user)
+            instruc = INSTRUCTOR.objects.get(USER_NAME = request.user.USER_NAME)
             unblocked = BLOCK_LIST.objects.get(students = BAD_STUDENT , instructors = instruc )
             unblocked.delete()
             message = "learner unblocked successfully"

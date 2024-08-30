@@ -1,5 +1,8 @@
 from django.db import models
 from django.core.validators import FileExtensionValidator
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+
 # each course will have many reviews 
 class REVIEWS(models.Model):
     USER_NAME =  models.ForeignKey( 'STUDENT.STUDENT', on_delete=models.CASCADE) 
@@ -62,6 +65,21 @@ class Rating(models.Model):
     RATING = models.IntegerField(choices=rating_choices, blank=True, null=True)
     user = models.ForeignKey('STUDENT.STUDENT', on_delete=models.CASCADE)
     course = models.ForeignKey('COURSES', on_delete=models.CASCADE)
+    #both student and teacher will inherit from it 
+
+
+
+class ChatRoom(models.Model):
+    message = models.CharField(max_length = 250, blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    #so both student and instructor can contribute to the chat 
+    sender = GenericForeignKey('content_type', 'object_id')
+    TimeStamp =models.DateTimeField(auto_now_add=True)
+    courseRoom = models.ForeignKey(COURSES, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ['TimeStamp']
 
 
 

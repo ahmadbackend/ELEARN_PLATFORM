@@ -3,12 +3,27 @@ import json
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-
+from HOME_AREA.models import COURSES
+from INSTRUCTOR.models import BLOCK_LIST
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = f"chat_{self.room_name}"
+        user = self.scope["user"]
+        self.course = self.scope["url_route"]["kwargs"]["course"]
+
+
+        #user entered chatroom manually in browser tab
+        try:
+            course =  COURSES.objects.get(COURSE_NAME=self.course)
+        except COURSES.DoesNotExist:
+            self.close()
+            return
+         #kick out from chat room
+        if BLOCK_LIST.objects.filter(students=user, instructors=course.instructor).exists():
+            self.close()
+            return
 
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
