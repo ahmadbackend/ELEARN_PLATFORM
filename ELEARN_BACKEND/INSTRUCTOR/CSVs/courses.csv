@@ -1,11 +1,11 @@
 COURSE_NAME,COVER_PHOTO,instructor,RATING,PUBLICATION_DATE,IsDraft
-Introduction to Python,cover1.jpg,INSTRUCTOR1,4,2023-08-20,true
-Advanced Django,cover2.jpg,INSTRUCTOR2,5,2023-08-22,false
-React Native Essentials,cover3.jpg,INSTRUCTOR3,3,2023-08-23,true
-Machine Learning Basics,cover4.jpg,INSTRUCTOR4,2,2023-08-24,false
-Data Science with Python,cover5.jpg,INSTRUCTOR5,4,2023-08-25,true
-JavaScript for Beginners,cover6.jpg,INSTRUCTOR6,3,2023-08-26,false
-Web Development 101,cover7.jpg,INSTRUCTOR7,5,2023-08-27,true
-Introduction to AI,cover8.jpg,INSTRUCTOR8,4,2023-08-28,false
-Data Structures and Algorithms,cover9.jpg,INSTRUCTOR9,3,2023-08-29,true
-Cloud Computing,cover10.jpg,INSTRUCTOR10,4,2023-08-30,false
+Introduction to Python,cover1.jpg,alicegreen1,4,2023-08-20,true
+Advanced Django,cover2.jpg,robertharris2,5,2023-08-22,false
+React Native Essentials,cover3.jpg,sophialopez4,3,2023-08-23,true
+Machine Learning Basics,cover4.jpg,davidwright5,2,2023-08-24,false
+Data Science with Python,cover5.jpg,jamesking7,4,2023-08-25,true
+JavaScript for Beginners,cover6.jpg,davidwright5,3,2023-08-26,false
+Web Development 101,cover7.jpg,avaadams10,5,2023-08-27,true
+Introduction to AI,cover8.jpg,jamesking7,4,2023-08-28,false
+Data Structures and Algorithms,cover9.jpg,davidwright5,3,2023-08-29,true
+Cloud Computing,cover10.jpg,avaadams10,4,2023-08-30,false

@@ -19,7 +19,7 @@
 </div>
 
 {{ course|json_script:"course-name" }}
-{{ user|json_script:"user-name" }}
+{{ userName|json_script:"user-name" }}
 
 <script>
 
@@ -39,7 +39,10 @@
         chatSocket.onmessage = function(e) {
             let chatLog = document.getElementById('chat-log')
             const data = JSON.parse(e.data);
-            const message = `<a href="{% url 'STUDENTS:DashboardWithUserName' user %}">${userName}</a>: ${data.message} `;
+            console.log(data.userName)
+            const URl =`/student/Dashboard/${data.userName}`
+            const message = `<a href= ${URl} target="_blank">${data.userName}</a>: ${data.message} <br>`;
+            
             chatLog.innerHTML += message;
         };
 
@@ -59,7 +62,8 @@
             const message = messageInputDom.value;
             console.log(`the message is ${message} `)
             chatSocket.send(JSON.stringify({
-                'message': message
+                'message': message,
+                'userName':userName
             }));
             messageInputDom.value = '';
         };

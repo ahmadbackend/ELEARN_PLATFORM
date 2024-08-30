@@ -118,7 +118,9 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
+SESSION_COOKIE_PATH = '/'
+SESSION_COOKIE_DOMAIN = None
+SESSION_COOKIE_SAMESITE = 'lax'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 

@@ -48,7 +48,7 @@
             <div class="mt-4 space-y-4">
                 {% for review in reviews %}
                 <div class="p-4 bg-gray-100 rounded-lg shadow-md">
-                    <p><a href="#" class="text-blue-600 hover:text-blue-800">{{ review.USER_NAME }}:</a> {{ review.OPINION }}</p>
+                    <p><a href="{%url 'STUDENTS:DashboardWithUserName' review.USER_NAME%}" class="text-blue-600 hover:text-blue-800">{{ review.USER_NAME }}:</a> {{ review.OPINION }}</p>
                     <p class="text-sm text-gray-500">{{ review.WRITING_DATE }}</p>
                 </div>
                 {% endfor %}
