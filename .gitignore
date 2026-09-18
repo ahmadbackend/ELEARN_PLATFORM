@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtualenv  (never commit the environment - use requirements.txt)
+.venv/
+venv/
+env/
+ENV/
+AWD_FINAL/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+/media/
+ELEARN_BACKEND/media/
+staticfiles/
+
+# Celery
+celerybeat-schedule
+celerybeat-schedule.*
+celerybeat.pid
+
+# Secrets - never commit
+.env
+*.pem
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Tailwind
+node_modules/
