@@ -1,0 +1,23 @@
+# Default: let git normalise text in the repository.
+* text=auto
+
+# These are read inside Linux containers. A CRLF line ending would turn the
+# entrypoint's shebang into `/bin/sh\r` and the image would refuse to start,
+# so they must stay LF no matter what platform the checkout happens on.
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+*.conf          text eol=lf
+docker-compose.yml text eol=lf
+requirements.txt   text eol=lf
+
+# Never touched as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mp4 binary
+*.mkv binary
+*.mp3 binary
+*.zip binary
+*.rar binary

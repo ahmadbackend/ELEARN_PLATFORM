@@ -69,17 +69,26 @@ class Rating(models.Model):
 
 
 
-class ChatRoom(models.Model):
-    message = models.CharField(max_length = 250, blank=True, null=True)
+# private one-to-one conversation between a learner and a tutor.
+# the room is implicit: every message of the same (student, instructor) pair belongs to the same room
+class PeerChat(models.Model):
+    student = models.ForeignKey('STUDENT.STUDENT', on_delete=models.CASCADE, related_name='peer_chats')
+    instructor = models.ForeignKey('INSTRUCTOR.INSTRUCTOR', on_delete=models.CASCADE, related_name='peer_chats')
+    message = models.CharField(max_length=1000)
+    #generic sender so the message can come from either a student or an instructor
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    #so both student and instructor can contribute to the chat 
     sender = GenericForeignKey('content_type', 'object_id')
-    TimeStamp =models.DateTimeField(auto_now_add=True)
-    courseRoom = models.ForeignKey(COURSES, on_delete=models.CASCADE)
+    TimeStamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['TimeStamp']
 
+    @property
+    def sender_cat(self):
+        return self.content_type.model
 
-
+    @staticmethod
+    def group_name(instructor, student):
+        # channel group names cannot contain spaces so we rely on ids instead of user names
+        return f"peer_{instructor.id}_{student.id}"

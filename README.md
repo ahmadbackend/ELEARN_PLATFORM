@@ -1,96 +1,264 @@
 # E-Learning Platform
 
-A multi-role learning platform built with Django 5 — course delivery, instructor and student
-dashboards, and email-driven account workflows, served over ASGI so real-time features can run
-alongside ordinary request/response views.
+A multi-role learning platform: a Django 5 JSON API served over ASGI, and a single-page
+frontend written in plain HTML, CSS and JavaScript with no framework and no build step.
+Course delivery, tutor and learner dashboards, email-driven account workflows and a
+real-time learner↔tutor chat.
+
+```bash
+cp .env.example .env     # then set DJANGO_SECRET_KEY and POSTGRES_PASSWORD
+docker compose up --build
+```
+
+Then open <http://localhost:8080/>.
+
+---
 
 ## What it does
 
-The system separates three audiences into their own Django apps, each with its own views,
-templates and permission rules.
-
-**Students**
-- Register with an emailed activation code; inactive accounts are blocked at login and
-  redirected to the activation page rather than failing silently
+**Learners**
+- Register with an emailed activation code; an inactive account is told to activate rather than
+  just being refused
 - Self-service password reset
-- Dashboard of currently enrolled courses
-- A status area visible to peers and instructors
-- Contact an instructor directly to resolve a mistaken block
+- Browse and search the catalogue, enrol, watch lectures and download lecture attachments
+- Rate a course (1–5) and write one review, both editable and removable
+- Dashboard of enrolled courses and a status shown on their public page
+- Message the tutor of any course they are enrolled in
+- Appeal by email when a tutor has blocked them
 
-**Instructors**
-- Dashboard listing their courses with per-course enrolment counts
-- Create courses; add, edit and remove lectures
-- Browse enrolled students and open individual student accounts
-- Block and unblock students
-- Post a status visible to their students
+**Tutors**
+- Create courses as drafts, publish them, edit or delete them
+- Add, edit and remove lectures with a video and an optional attachment
+- See who is enrolled, per course and across all courses
+- Block and unblock learners; a block closes the chat and hides the course immediately
+- Email every learner on a course
+- Public profile with their published courses and a status
 
-**Courses**
-- Lecture delivery
-- Reviews with aggregate rating breakdown
-- Public course detail pages
+**Real time**
+- One private room per (learner, tutor) pair over websockets, with REST polling as a fallback
+  when the socket cannot be opened
+
+---
 
 ## Architecture
 
 ```
-ELEARN_BACKEND/
-├── ELEARN_BACKEND/   project settings, ASGI entrypoint, Celery config
-├── HOME_AREA/        public pages, auth, activation and password-reset flows
-├── INSTRUCTOR/       instructor dashboard, course and lecture management
-├── STUDENT/          student dashboard, enrolment, status
-└── theme/            Tailwind theme app
+ELEARN_BACKEND/           Django 5, API only — no templates, no server-rendered pages
+├── ELEARN_BACKEND/       settings, ASGI entrypoint, celery config, /api/v1/ route table
+├── HOME_AREA/            auth, JWT, password hashing, catalogue, peer chat + its consumer
+├── INSTRUCTOR/           tutor models, endpoints and the CSV seed command
+└── STUDENT/              learner models and endpoints
+ELEARN_FRONTEND/          the SPA (plain HTML + JS) and the nginx image that serves it
+docker-compose.yml        postgres, redis, web, worker, beat, frontend
 ```
 
 | Concern | Choice |
 |---|---|
-| Framework | Django 5.0 |
-| Async / real-time | Django Channels 4.1 on Daphne (ASGI) |
-| Background work | Celery 5.4 with Celery Beat for scheduled notifications |
-| Broker / cache | Redis |
-| Styling | Tailwind CSS via `django-tailwind` |
-| Database | SQLite in development |
+| API | Django 5.0 + Django REST Framework 3.15 |
+| Async / real-time | Django Channels 4.1 on Daphne (ASGI), Redis channel layer |
+| Background work | Celery 5.4 with Celery Beat |
+| Database | PostgreSQL 16 (SQLite for a quick local run) |
+| Cache / broker | Redis 7 |
+| Frontend | Hand-written ES modules, hash router, no framework, no build step |
+| Edge | nginx — serves the SPA and proxies the API, websockets, media and static |
+| Docs | OpenAPI 3 via drf-spectacular, Swagger UI at `/api/schema/swagger-ui/` |
 
-Running under Daphne rather than WSGI means the HTTP views and the Channels consumers share
-one process model, so real-time course notifications do not need a second service.
+One process model handles both HTTP and websockets, so real-time features need no second
+service. nginx puts the SPA and the API on a single origin, which means the browser never
+makes a cross-origin request and CORS is not involved at all.
 
-## Running it locally
+---
+
+## Running it
+
+### With docker compose (recommended)
 
 ```bash
-git clone https://github.com/ahmadbackend/ELEARN_PLATFORM.git
-cd ELEARN_PLATFORM/ELEARN_BACKEND
+cp .env.example .env
+# fill in DJANGO_SECRET_KEY and POSTGRES_PASSWORD, and set DJANGO_DB_ENGINE=postgres
+docker compose up --build
+```
 
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+| URL | What |
+|---|---|
+| <http://localhost:8080/> | the app |
+| <http://localhost:8080/api/schema/swagger-ui/> | interactive API docs |
+| <http://localhost:8080/admin/> | Django admin |
+
+Everything goes through nginx on port 8080; the backend is not published directly.
+The `web` container runs the migrations and `collectstatic` on start; `worker` and `beat`
+wait for it and skip both (`RUN_MIGRATIONS=0`).
+
+Useful follow-ups:
+
+```bash
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py LoadData      # seed demo tutors, learners, courses
+docker compose exec web python manage.py test          # run the test suite
+docker compose down -v                                 # stop and wipe the volumes
+```
+
+Without SMTP credentials, activation and reset codes are printed to the log instead of
+emailed — read them with `docker compose logs -f web`.
+
+### Without docker
+
+```bash
+cd ELEARN_BACKEND
+python -m venv .venv && source .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-cp ../.env.example ../.env       # then edit it — see Configuration
+export DJANGO_SECRET_KEY=$(python -c "from django.core.management.utils import get_random_secret_key as k; print(k())")
+export DJANGO_DEBUG=True
 python manage.py migrate
-python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Redis must be running for Celery and Channels:
+That uses SQLite and expects Redis on `127.0.0.1:6379` for the cache, the channel layer and
+celery. Serve the SPA from the same origin, or from its own and set `API_BASE` in
+[`ELEARN_FRONTEND/config.js`](ELEARN_FRONTEND/config.js) plus `CORS_ALLOWED_ORIGINS` on the
+backend. See [`ELEARN_FRONTEND/README.md`](ELEARN_FRONTEND/README.md).
 
 ```bash
-redis-server
 celery -A ELEARN_BACKEND worker -l info
 celery -A ELEARN_BACKEND beat -l info
 ```
 
+---
+
 ## Configuration
 
-Settings are read from the environment — nothing secret is committed. Copy `.env.example`
-to `.env` and fill it in:
+Every environment-specific setting is read from the environment; nothing secret is committed.
+Copy `.env.example` to `.env` and fill it in.
 
 | Variable | Purpose |
 |---|---|
-| `DJANGO_SECRET_KEY` | Required. Generate with `django.core.management.utils.get_random_secret_key()` |
+| `DJANGO_SECRET_KEY` | **Required.** Signs sessions *and* the API tokens |
 | `DJANGO_DEBUG` | `True` in development; defaults to `False` |
 | `DJANGO_ALLOWED_HOSTS` | Comma-separated hostnames |
-| `EMAIL_HOST` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` | SMTP for activation codes and password resets. Gmail needs an App Password |
-| `CELERY_BROKER_URL` | Redis connection string |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | Browser-visible origins, needed for admin logins behind nginx |
+| `DJANGO_SECURE_SSL` | `True` once TLS is terminated in front: turns on the secure-cookie and redirect settings |
+| `DJANGO_DB_ENGINE` | `postgres` or `sqlite` |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_HOST` / `POSTGRES_PORT` | Postgres connection |
+| `REDIS_URL` | One Redis server; db 0 is celery, 1 the cache, 2 the channel layer |
+| `EMAIL_HOST` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` | SMTP for activation codes and resets. Gmail needs an App Password. Empty user ⇒ codes go to the log |
+| `API_TOKEN_MAX_AGE` | Seconds a login token stays valid; defaults to 7 days |
+| `THROTTLE_LOGIN` / `THROTTLE_REGISTER` / `THROTTLE_CODE` | Per-IP rate limits on the unauthenticated auth endpoints |
+| `CORS_ALLOWED_ORIGINS` | Only when the SPA is on another origin (needs `django-cors-headers`) |
+| `FRONTEND_PORT` | Host port compose publishes the app on (default 8080) |
+
+---
+
+## Security
+
+- **Passwords are hashed** with Django's PBKDF2 hasher ([`HOME_AREA/passwords.py`](ELEARN_BACKEND/HOME_AREA/passwords.py)).
+  Registration, password reset, the seed command and the admin all go through it, and the
+  auth backends compare against the hash. Earlier versions of this project stored passwords
+  as plaintext; `STUDENT/migrations/0002_hash_passwords.py` and its `INSTRUCTOR` twin widen
+  the column and hash existing rows in place, so nobody's password changes.
+- **Tokens are stateless and header-only.** No session cookie is set for the SPA, so there is
+  no CSRF surface on the API. A token carries a fingerprint of the stored password hash, so
+  changing a password invalidates every token issued before it.
+- **Rate limits** on login, registration, activation and password reset keep the six-digit
+  codes out of brute-force range.
+- **Password reset does not leak who has an account**: the answer is identical whether or not
+  the address is registered.
+- **Uploads are gated.** Lecture video and attachment URLs are only serialised for the course
+  owner and for enrolled, unblocked learners.
+- **Chat access is one rule in one place** ([`HOME_AREA/access.py`](ELEARN_BACKEND/HOME_AREA/access.py)),
+  used by both the HTTP view and the websocket consumer, and re-checked on every message so a
+  block or a drop takes effect immediately.
+- **The SPA escapes every interpolated value** in its `html` tagged template, so course names,
+  reviews and chat messages cannot inject markup.
+
+Known limitations: the JWT is kept in `localStorage`, which is the usual trade-off for a
+header-only SPA; the websocket takes its token in the query string, so it can appear in
+proxy logs; and activation codes have a rate limit but no expiry.
+
+---
+
+## REST API
+
+Everything the app does is `/api/v1/`. Interactive docs at `/api/schema/swagger-ui/`
+(or `/api/schema/redoc/`), raw OpenAPI at `/api/schema/`. Route table:
+[`ELEARN_BACKEND/ELEARN_BACKEND/api_urls.py`](ELEARN_BACKEND/ELEARN_BACKEND/api_urls.py).
+
+### Authentication
+
+`POST /api/v1/auth/login/` with `{"user_type": "student" | "instructor", "EMAIL", "PASSWORD"}`
+returns `{"token", "expires_in", "user"}`. The token is an HS256 JWT (claims `sub`, `cat`,
+`iat`, `exp`, `pw`) signed with `SECRET_KEY` — no token table. Login sets **no cookie**; the
+client keeps the token and sends it on every call:
+
+```
+Authorization: Bearer <token>
+```
+
+Websockets take the same token as a query string:
+`ws://host/ws/peerchat/<tutor>/<learner>/?token=<token>`.
+An inactive account answers `403 {"Isactive": false}` so the client can route to the
+activation screen. Logging out is the client discarding the token (`auth/logout/` exists for
+symmetry only).
+
+### Endpoints
+
+| Area | Endpoint | Methods |
+|---|---|---|
+| Auth | `auth/register/student/`, `auth/register/instructor/` (multipart) | POST |
+| | `auth/login/`, `auth/logout/`, `auth/activate/` | POST |
+| | `auth/password/forgot/`, `auth/password/reset/` | POST |
+| Me | `me/` profile (multipart for `PICTURE`) | GET PATCH DELETE |
+| | `me/status/` dashboard status, `me/courses/` enrolled / owned courses | GET PUT DELETE / GET |
+| Catalogue | `courses/?search=&instructor=&page=` published courses with rating summary | GET |
+| | `courses/{id}/` detail with `viewer` flags (`enrolled`, `blocked`, `is_owner`, `can_watch`) | GET |
+| | `courses/{id}/lectures/` media urls (enrolled or owner), `reviews/`, `ratings/` | GET |
+| Profiles | `students/{username}/`, `instructors/{username}/` | GET |
+| Student | `student/courses/{id}/enroll/` | POST DELETE |
+| | `student/courses/{id}/review/`, `student/courses/{id}/rating/` (one per learner, PUT upserts) | GET PUT DELETE |
+| | `student/courses/{id}/appeal/` ask a tutor to lift a block | POST |
+| Instructor | `instructor/courses/` (multipart `COURSE_NAME`, `COVER_PHOTO`, `IsDraft`) | GET POST |
+| | `instructor/courses/{id}/`, `.../publish/`, `.../notify/`, `.../learners/` | GET PATCH PUT DELETE / POST |
+| | `instructor/courses/{id}/lectures/`, `.../lectures/{id}/` (multipart `NAME`, `VIDEO`, `ADDITIONAL_FILES`) | CRUD |
+| | `instructor/learners/` grouped by course, `instructor/blocks/`, `instructor/blocks/{username}/` | GET / GET POST / DELETE |
+| Peer chat | `peer-chats/` inbox, `peer-chats/{tutor}/{learner}/?limit=20&after=<id>` last N messages, oldest first | GET / GET POST |
+
+Field names in the JSON are the model column names (`COURSE_NAME`, `COVER_PHOTO`, `IsDraft`, …).
+List endpoints are paginated (`count`, `next`, `previous`, `results`; `page_size` up to 100).
+
+### Peer chat
+
+1. `GET peer-chats/` for the inbox, `GET peer-chats/{tutor}/{learner}/` for the last 20 messages.
+2. Open `ws://host/ws/peerchat/{tutor}/{learner}/?token=<jwt>` and send `{"message": "..."}`;
+   the server saves it from the authenticated connection — never from anything the client
+   claims — and every party in the room receives
+   `{"message", "userName", "userCat", "timeStamp"}`.
+3. If the socket cannot be opened the client falls back to `POST` plus polling with `?after=<id>`.
+
+---
+
+## Frontend
+
+[`ELEARN_FRONTEND/`](ELEARN_FRONTEND/) is the whole user interface: hash-routed ES modules,
+no framework, no `package.json`, no build step. It covers every endpoint above. Its own
+[README](ELEARN_FRONTEND/README.md) has the file-by-file map and the route table.
+
+---
+
+## Tests
+
+```bash
+docker compose exec web python manage.py test          # or: python manage.py test
+```
+
+[`HOME_AREA/tests_api.py`](ELEARN_BACKEND/HOME_AREA/tests_api.py) covers the API surface:
+auth and token behaviour, password hashing, draft visibility, media gating, enrolment,
+reviews and ratings, tutor course and lecture management, blocks, and peer-chat access
+control. Email and the channel layer are stubbed, so no SMTP or broker is needed.
+
+---
 
 ## Status
 
-Built as a solo project. The features listed above are implemented and working. Chat
-(group, instructor-to-class, and one-to-one with file sharing) and a documented REST API
-are designed but not yet built.
+Built as a solo project. The Django template pages the project started as have been removed:
+the SPA is the only interface, and the server is an API. File sharing inside chat is the one
+listed feature that is not built.

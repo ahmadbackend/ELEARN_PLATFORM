@@ -1,0 +1,121 @@
+# Full stack: postgres, redis, the ASGI backend, its celery worker and beat, and nginx
+# serving the SPA. Everything is reached through nginx on one origin, so the browser
+# never makes a cross-origin request and CORS stays out of the picture.
+#
+#   cp .env.example .env     # then fill in DJANGO_SECRET_KEY and POSTGRES_PASSWORD
+#   docker compose up --build
+#   open http://localhost:8080/
+
+name: elearn
+
+x-backend: &backend
+  build:
+    context: ./ELEARN_BACKEND
+  image: elearn-backend:latest
+  env_file: .env
+  environment:
+    DJANGO_DB_ENGINE: postgres
+    POSTGRES_HOST: db
+    REDIS_URL: redis://redis:6379
+    DJANGO_STATIC_ROOT: /srv/static
+    DJANGO_MEDIA_ROOT: /srv/media
+  volumes:
+    - media:/srv/media
+    - static:/srv/static
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-elearn}
+      POSTGRES_USER: ${POSTGRES_USER:-elearn}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-elearn} -d ${POSTGRES_DB:-elearn}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # migrates, collects static, then serves http + websockets
+  web:
+    <<: *backend
+    command: ["daphne", "-b", "0.0.0.0", "-p", "8000", "ELEARN_BACKEND.asgi:application"]
+
+  # activation mail, reset codes, the notify-all-learners action
+  worker:
+    <<: *backend
+    command: ["celery", "-A", "ELEARN_BACKEND", "worker", "-l", "info"]
+    environment:
+      DJANGO_DB_ENGINE: postgres
+      POSTGRES_HOST: db
+      REDIS_URL: redis://redis:6379
+      DJANGO_STATIC_ROOT: /srv/static
+      DJANGO_MEDIA_ROOT: /srv/media
+      # only `web` owns the schema, so these two never race it on start-up
+      RUN_MIGRATIONS: "0"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+
+  # nightly cleanup of accounts that were never activated
+  beat:
+    <<: *backend
+    command: ["celery", "-A", "ELEARN_BACKEND", "beat", "-l", "info"]
+    environment:
+      DJANGO_DB_ENGINE: postgres
+      POSTGRES_HOST: db
+      REDIS_URL: redis://redis:6379
+      DJANGO_STATIC_ROOT: /srv/static
+      DJANGO_MEDIA_ROOT: /srv/media
+      RUN_MIGRATIONS: "0"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./ELEARN_FRONTEND
+    image: elearn-frontend:latest
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    volumes:
+      - media:/srv/media:ro
+      - static:/srv/static:ro
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
+  media:
+  static:

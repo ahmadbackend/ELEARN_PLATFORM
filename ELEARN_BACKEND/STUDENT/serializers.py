@@ -1,49 +1,24 @@
+"""Student-only serializers. The shared ones (profile, courses, reviews...) live in HOME_AREA.serializers."""
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-from .models import *
 
-from HOME_AREA.serializers import Courses_Serializer
-from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
-class StudentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = STUDENT
-        exclude = ["is_active"]
-        depth = 1
+from HOME_AREA.serializers import StudentPublicSerializer, CourseListSerializer
 
-class CourseStudentSerializer(serializers.ModelSerializer):
-    course = Courses_Serializer()
-    student = StudentSerializer()
-    class Meta:
-        model = COURSE_LIST
-        fields = "__all__"
-        depth = 1
 
-     
-class LogInSerializerStudent(serializers.Serializer):
-    USER_NAME = serializers.CharField(required=True)
-    EMAIL =serializers.EmailField(required=True)
-    PASSWORD = serializers.CharField(required=True)
-   
-    def validate(self, data):
-        user_name = data.get('USER_NAME')
+class AppealSerializer(serializers.Serializer):
+    appeal = serializers.CharField(max_length=2000)
 
-        email = data.get('EMAIL')
-        password = data.get('PASSWORD')
-        try:
-            student = get_object_or_404(STUDENT, USER_NAME = user_name,
-            PASSWORD = password, EMAIL = email)
-            if student.ISactive:
-                return data
-            else:
-                raise ValidationError({"message": "User is valid but not active", "Isactive": False}) 
-        except:
-            raise ValidationError("Invalid credentials")
 
-class VrifySerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = CODE_GENERATOR
-        fields = ["ACTIVATION_CODE","EMAIL"]
-class ForgetPassSerializer(serializers.Serializer):
-    EMAIL = serializers.EmailField(required=True)
-    
+class StudentProfileSerializer(StudentPublicSerializer):
+    """Public dashboard of a learner: profile, status and enrolled courses."""
+    status = serializers.SerializerMethodField()
+    courses = CourseListSerializer(many=True, read_only=True)
+
+    class Meta(StudentPublicSerializer.Meta):
+        fields = StudentPublicSerializer.Meta.fields + ['status', 'courses']
+        read_only_fields = fields
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_status(self, student):
+        from HOME_AREA.user_status import get_status
+        return get_status(student)

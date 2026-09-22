@@ -1,51 +1,30 @@
+"""Instructor-only serializers. The shared ones (courses, lectures, profile...) live in HOME_AREA.serializers."""
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-from .models import *
-from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
-from HOME_AREA.models import COURSES, LECTURES
-class InstructorSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = INSTRUCTOR
-        exclude=["is_active"]
-        depth = 1
+from HOME_AREA.serializers import (InstructorPublicSerializer, StudentPublicSerializer,
+                                   CourseListSerializer)
 
-class CoursCRUDAPISerializer(serializers.ModelSerializer):
-    class Meta:
-        model = COURSES
-        exclude=["instructor",'PUBLICATION_DATE']
-
-class LecturesCRUDserializer(serializers.ModelSerializer):
-    class Meta:
-        model = LECTURES
-        fields = "__all__"
 
 class BlockHandlerSerializer(serializers.Serializer):
-    USER_NAME = serializers.CharField(required = True)
+    USER_NAME = serializers.CharField(max_length=50)
 
 
-class LogInSerializer(serializers.Serializer):
-    USER_NAME = serializers.CharField(required=True)
-    EMAIL =serializers.EmailField(required=True)
-    PASSWORD = serializers.CharField(required=True)
-   
-    def validate(self, data):
-        user_name = data.get('USER_NAME')
-
-        email = data.get('EMAIL')
-        password = data.get('PASSWORD')
-        try:
-            instructor = get_object_or_404(INSTRUCTOR, USER_NAME = user_name,
-            PASSWORD = password, EMAIL = email)
-            if student.ISactive:
-                return data
-            else:
-                raise ValidationError({"message": "User is valid but not active", "Isactive": False}) 
-        except:
-            raise ValidationError("Invalid credentials")
-   
+class CourseLearnersSerializer(serializers.Serializer):
+    course = CourseListSerializer(read_only=True)
+    learners = StudentPublicSerializer(many=True, read_only=True)
 
 
+class InstructorProfileSerializer(InstructorPublicSerializer):
+    """Public page of a tutor: profile, status and published courses."""
+    status = serializers.SerializerMethodField()
+    courses = CourseListSerializer(many=True, read_only=True)
 
-        
+    class Meta(InstructorPublicSerializer.Meta):
+        fields = InstructorPublicSerializer.Meta.fields + ['status', 'courses']
+        read_only_fields = fields
 
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_status(self, instructor):
+        from HOME_AREA.user_status import get_status
+        return get_status(instructor)

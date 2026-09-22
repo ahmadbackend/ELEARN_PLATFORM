@@ -1,6 +1,4 @@
-import os 
-import django
-import sys
+import os
 import csv
 
 from django.conf import settings
@@ -8,14 +6,12 @@ from STUDENT.models import *
 from INSTRUCTOR.models import *
 from HOME_AREA.models import *
 from django.core.management.base import BaseCommand
+from HOME_AREA.passwords import hash_password
 from django.core.files.images import  ImageFile
 from django.core.files import File
 
 
 #flushing
-os.environ.setdefault('DJANGO_SETTING_MODULES','ELEARN_BACKEND.settings')
-print("success")
-django.setup()
 #FIRST_NAME,LAST_NAME,USER_NAME,EMAIL,PHONE,PICTURE,PASSWORD,Isactive
 
 class Command(BaseCommand):
@@ -45,17 +41,23 @@ class Command(BaseCommand):
                         # Wrap the image file in an ImageFile object
                         django_image_file = ImageFile(picture_file, name=picture_filename)  
 
+                        # the password column holds a hash, so it cannot be part of the
+                        # lookup: key on the unique EMAIL and hash the csv value into defaults
                         instr, created = INSTRUCTOR.objects.get_or_create(
-                            FIRST_NAME=row['FIRST_NAME'],
-                            LAST_NAME=row['LAST_NAME'],
-                            USER_NAME=row['USER_NAME'],
                             EMAIL=row['EMAIL'],
-                            PHONE=row['PHONE'],
-                            PASSWORD=row['PASSWORD'],
-                            Isactive=True,
+                            defaults={
+                                'FIRST_NAME': row['FIRST_NAME'],
+                                'LAST_NAME': row['LAST_NAME'],
+                                'USER_NAME': row['USER_NAME'],
+                                'PHONE': row['PHONE'],
+                                'PASSWORD': hash_password(row['PASSWORD']),
+                                'Isactive': True,
+                            },
                         )
+                        if not created:
+                            continue
                         # Save the image file to the PICTURE field with same instructor name 
-                        instr.PICTURE.save(row['USER_NAME'], django_image_file) 
+                        instr.PICTURE.save(f"{row['USER_NAME']}.jpg", django_image_file) 
 
                         #same as above for student 
         with open(students_csv_path, 'r') as students_file:
@@ -69,17 +71,23 @@ class Command(BaseCommand):
                         # Wrap the image file in an ImageFile object
                         django_image_file = ImageFile(picture_file, name=picture_filename)  
 
+                        # the password column holds a hash, so it cannot be part of the
+                        # lookup: key on the unique EMAIL and hash the csv value into defaults
                         student, created = STUDENT.objects.get_or_create(
-                            FIRST_NAME=row['FIRST_NAME'],
-                            LAST_NAME=row['LAST_NAME'],
-                            USER_NAME=row['USER_NAME'],
                             EMAIL=row['EMAIL'],
-                            PHONE=row['PHONE'],
-                            PASSWORD=row['PASSWORD'],
-                            Isactive=True,
+                            defaults={
+                                'FIRST_NAME': row['FIRST_NAME'],
+                                'LAST_NAME': row['LAST_NAME'],
+                                'USER_NAME': row['USER_NAME'],
+                                'PHONE': row['PHONE'],
+                                'PASSWORD': hash_password(row['PASSWORD']),
+                                'Isactive': True,
+                            },
                         )
+                        if not created:
+                            continue
                         # Save the image file to the PICTURE field with same instructor name 
-                        student.PICTURE.save(row['USER_NAME'], django_image_file)  
+                        student.PICTURE.save(f"{row['USER_NAME']}.jpg", django_image_file)  
         #COURSE_NAME,COVER_PHOTO,instructor,RATING,PUBLICATION_DATE,IsDraft
 
         with open(courses_csv_path,'r') as courses:
@@ -96,7 +104,7 @@ class Command(BaseCommand):
                             IsDraft= False,
                             instructor= instr,
                         )
-                        course.COVER_PHOTO.save(row['COURSE_NAME'], courseImg)
+                        course.COVER_PHOTO.save(f"{row['COURSE_NAME']}.jpg", courseImg)
 
         #LOADING LECTURES TO COURSES 
         #NAME,VIDEO,ADDITIONAL_FILES,course
@@ -109,21 +117,15 @@ class Command(BaseCommand):
                 # Get the course associated with the lecture
                 course = COURSES.objects.get(COURSE_NAME=row['course'])
                 
-                if os.path.exists(video_path):
+                lecture, created = LECTURES.objects.get_or_create(
+                    NAME=row['NAME'],
+                    course=course,
+                    defaults={'ADDITIONAL_FILES': row['ADDITIONAL_FILES']}
+                )
+                # the sample video is not in the repository; seed the outline without it
+                if created and os.path.exists(video_path):
                     with open(video_path, 'rb') as video_file:
-                        lectureVideo = File(video_file, name=f'{row["NAME"]}.mp4')
-                        
-                        # Create or get the lecture
-                        lecture, created = LECTURES.objects.get_or_create(
-                            NAME=row['NAME'],
-                            course=course,
-                            defaults={'ADDITIONAL_FILES': row['ADDITIONAL_FILES']}
-                        )
-                        
-                        # Save the video to the lecture
-                        lecture.VIDEO.save(f'{row["NAME"]}.mp4', lectureVideo)
-                else:
-                    print("im here in wrong area")
+                        lecture.VIDEO.save(f'{row["NAME"]}.mp4', File(video_file, name=f'{row["NAME"]}.mp4'))
         
         #USER_NAME,OPINION,reviews
         with open(reviews_csv_path,'r') as review:

@@ -1,5 +1,7 @@
 from django.db import models
 from django.core.validators import MinLengthValidator, RegexValidator
+
+from HOME_AREA.passwords import PASSWORD_HASH_MAX_LENGTH
 # instead of importing i used lazy loading by using appname.model string
 # Create your models here.
 class STUDENT(models.Model):
@@ -11,12 +13,16 @@ class STUDENT(models.Model):
     last_login = models.DateTimeField(null=True, blank=True)  # Add last_login field
 
     PICTURE = models.ImageField(upload_to='images/', blank=True, null= True)
-    PASSWORD = models.CharField(null=False, blank=False, max_length=12,
+    # stores a Django password hash, never the raw password (HOME_AREA.passwords).
+    # the validators describe what the *raw* password must look like: the serializers
+    # read them back off this field to check the input before it is hashed.
+    PASSWORD = models.CharField(null=False, blank=False, max_length=PASSWORD_HASH_MAX_LENGTH,
      validators=[
             MinLengthValidator(8),  # Minimum length of 8 characters
             RegexValidator(
-                regex=r'^(?=.*[a-z])(?=.*\d)[a-zA-Z\d]{8,}$',
-                message="Password must contain at least one lowercase letter and one digit.",
+                regex=r'^(?=.*[a-z])(?=.*\d)[a-zA-Z\d]{8,12}$',
+                message="Password must be 8 to 12 letters and digits, "
+                        "with at least one lowercase letter and one digit.",
             ),
         ]
     )
@@ -33,6 +39,16 @@ class STUDENT(models.Model):
     @property
     def user_cat(self):
         return "student"
+
+    # DRF's IsAuthenticated and Django's auth helpers expect these on any user object.
+    # STUDENT/INSTRUCTOR do not extend AbstractBaseUser so we provide them by hand
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
 
 
     class Meta:
