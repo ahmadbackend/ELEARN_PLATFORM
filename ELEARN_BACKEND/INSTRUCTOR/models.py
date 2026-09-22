@@ -46,6 +46,13 @@ class INSTRUCTOR(models.Model):
     def is_anonymous(self):
         return False
 
+    # Learners and tutors are not back-office users: the admin site belongs to
+    # django.contrib.auth accounts (see HOME_AREA/staff.py). Declaring these
+    # explicitly keeps the admin login form rejecting them cleanly, instead of
+    # blowing up on a missing attribute if an address happens to collide.
+    is_staff = False
+    is_superuser = False
+
     class META:
         verbose_name_plural = "Instructors"
         permissions = [

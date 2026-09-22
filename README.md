@@ -101,6 +101,66 @@ docker compose down -v                                 # stop and wipe the volum
 Without SMTP credentials, activation and reset codes are printed to the log instead of
 emailed — read them with `docker compose logs -f web`.
 
+### Accounts and roles
+
+There are two separate populations, and they log in in different places.
+
+| Role | Table | Signs in at | Can |
+|---|---|---|---|
+| Learner | `STUDENT` | the SPA, "Learner" | enrol, watch, rate, review, message their tutors |
+| Tutor | `INSTRUCTOR` | the SPA, "Tutor" | own courses and lectures, see and block their learners |
+| Moderator | `auth.User` + `Moderators` group | `/admin/` | take down content, see enrolments, block on a tutor's behalf |
+| Admin | `auth.User` superuser | `/admin/` | everything |
+
+Learners and tutors are **not** `django.contrib.auth` users and can never reach the admin
+site — `is_staff` is hard-coded `False` on both models, so a platform login is refused at
+`/admin/` even if an address happens to collide with a staff username.
+
+A moderator moderates content and conduct, not accounts. The exact permission set is one
+list in [`HOME_AREA/staff.py`](ELEARN_BACKEND/HOME_AREA/staff.py); what it deliberately
+withholds is the interesting part:
+
+- no access to `auth.User` or `auth.Group`, so a moderator cannot create staff or grant
+  permissions — not even to themselves
+- no add or delete on `STUDENT` / `INSTRUCTOR`: they can suspend an account (`Isactive`),
+  not create or erase one
+- the `PASSWORD` field is hidden from them on both models, so they cannot set a password
+  and sign in as that person. Only a superuser sees it, and typing into it stores a hash.
+
+Create the accounts and sync the group:
+
+```bash
+docker compose exec web python manage.py SeedStaff
+```
+
+It is idempotent: run it again after editing `MODERATOR_PERMISSIONS` and the group catches
+up, including permissions removed from the list. `--moderators N` changes how many are
+created, and `--promote <username>` makes an existing user a moderator.
+
+New accounts are created with an unusable password, because `SeedStaff` deliberately does
+not deal in credentials — `DumpUsers` does.
+
+### Getting the passwords out
+
+```bash
+docker compose exec web python manage.py DumpUsers --out /app/users.txt
+docker compose cp web:/app/users.txt ./users.txt
+```
+
+`users.txt` lists every account — admins, moderators, tutors and learners — with a password
+that works. Passwords are stored as hashes, so:
+
+- learners and tutors seeded from `INSTRUCTOR/CSVs` are reported with their original
+  password, verified against the stored hash first (`seeded`)
+- for anything else there is nothing to recover, so a new password is generated and saved
+  (`reset`). Any API token held by those accounts stops working. `--no-reset` lists them as
+  unknown instead of touching them.
+
+The file is plaintext credentials. It is gitignored, it must never be written under
+`MEDIA_ROOT` (nginx serves that directory), and it is a development convenience — for a real
+deployment, create the superuser with `createsuperuser` and let people set their own
+passwords.
+
 ### Without docker
 
 ```bash
@@ -170,6 +230,9 @@ Copy `.env.example` to `.env` and fill it in.
   block or a drop takes effect immediately.
 - **The SPA escapes every interpolated value** in its `html` tagged template, so course names,
   reviews and chat messages cannot inject markup.
+- **The back office is a separate population.** Learners and tutors cannot reach `/admin/`,
+  and moderators get a permission set that excludes accounts, passwords and permissions
+  (see *Accounts and roles*).
 
 Known limitations: the JWT is kept in `localStorage`, which is the usual trade-off for a
 header-only SPA; the websocket takes its token in the query string, so it can appear in
@@ -253,7 +316,10 @@ docker compose exec web python manage.py test          # or: python manage.py te
 [`HOME_AREA/tests_api.py`](ELEARN_BACKEND/HOME_AREA/tests_api.py) covers the API surface:
 auth and token behaviour, password hashing, draft visibility, media gating, enrolment,
 reviews and ratings, tutor course and lecture management, blocks, and peer-chat access
-control. Email and the channel layer are stubbed, so no SMTP or broker is needed.
+control. [`HOME_AREA/tests_staff.py`](ELEARN_BACKEND/HOME_AREA/tests_staff.py) covers the
+back-office boundary: what a moderator can reach, what they cannot, and that a learner or
+tutor can never log into the admin. Email and the channel layer are stubbed, so no SMTP or
+broker is needed.
 
 ---
 

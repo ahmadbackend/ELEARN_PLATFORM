@@ -26,6 +26,8 @@ celerybeat.pid
 # Secrets - never commit
 .env
 *.pem
+# plaintext credential dump from `manage.py DumpUsers`
+users.txt
 
 # Editors / OS
 .idea/
